@@ -1,0 +1,109 @@
+
+{% extends "base.html" %}
+
+{% block title %}Review Purchase - Admin{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-0">Review Purchase</h1>
+                    <p class="text-muted">Review and process account purchase</p>
+                </div>
+                <a href="{{ url_for('admin_purchases') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>Back to Purchases
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light border-0">
+                    <h6 class="mb-0 fw-bold">Purchase Details</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>Buyer:</strong> {{ purchase.buyer.username }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Account:</strong> @{{ purchase.account.username }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Platform:</strong> {{ purchase.account.platform.title() }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Seller:</strong> {{ purchase.account.seller.username }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Amount:</strong> ₦{{ "%.2f"|format(purchase.amount) }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Commission:</strong> ₦{{ "%.2f"|format(purchase.commission) }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Total:</strong> ₦{{ "%.2f"|format(purchase.total_amount) }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Payment Method:</strong> {{ purchase.payment_method.replace('_', ' ').title() }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Date:</strong> {{ purchase.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Status:</strong> 
+                            <span class="badge bg-{{ 'success' if purchase.status == 'completed' else 'warning' if purchase.status == 'pending' else 'info' }}">
+                                {{ purchase.status.title() }}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    {% if purchase.payment_proof %}
+                    <div class="mb-3">
+                        <strong>Payment Proof:</strong>
+                        <div class="mt-2">
+                            <a href="{{ url_for('uploaded_file', filename='payment_proofs/' + purchase.payment_proof) }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-file me-1"></i>View Proof
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light border-0">
+                    <h6 class="mb-0 fw-bold">Review Action</h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            {{ form.status.label(class="form-label") }}
+                            {{ form.status(class="form-select") }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                {{ form.account_delivered(class="form-check-input") }}
+                                {{ form.account_delivered.label(class="form-check-label") }}
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            {{ form.submit(class="btn btn-primary") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

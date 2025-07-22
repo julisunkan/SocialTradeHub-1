@@ -15,7 +15,7 @@
                     <a href="{{ url_for('browse') }}" class="btn btn-outline-primary">
                         <i class="fas fa-search me-1"></i>Browse Accounts
                     </a>
-                    <a href="#" class="btn btn-primary">
+                    <a href="{{ url_for('list_account') }}" class="btn btn-primary">
                         <i class="fas fa-plus me-1"></i>List Account
                     </a>
                 </div>
@@ -108,28 +108,28 @@
                 <div class="card-body">
                     <div class="row g-3">
                         <div class="col-md-3">
-                            <a href="#" class="btn btn-outline-primary w-100">
+                            <a href="{{ url_for('list_account') }}" class="btn btn-outline-primary w-100">
                                 <i class="fas fa-plus-circle me-2"></i>
                                 <div>List New Account</div>
                                 <small class="text-muted">Start selling</small>
                             </a>
                         </div>
                         <div class="col-md-3">
-                            <a href="#" class="btn btn-outline-success w-100">
+                            <a href="{{ url_for('deposit') }}" class="btn btn-outline-success w-100">
                                 <i class="fas fa-wallet me-2"></i>
                                 <div>Add Funds</div>
                                 <small class="text-muted">Deposit money</small>
                             </a>
                         </div>
                         <div class="col-md-3">
-                            <a href="#" class="btn btn-outline-info w-100">
+                            <a href="{{ url_for('referrals') }}" class="btn btn-outline-info w-100">
                                 <i class="fas fa-users me-2"></i>
                                 <div>Referrals</div>
                                 <small class="text-muted">Earn commission</small>
                             </a>
                         </div>
                         <div class="col-md-3">
-                            <a href="#" class="btn btn-outline-warning w-100">
+                            <a href="{{ url_for('wallet') }}" class="btn btn-outline-warning w-100">
                                 <i class="fas fa-history me-2"></i>
                                 <div>Transaction History</div>
                                 <small class="text-muted">View activity</small>
@@ -204,7 +204,7 @@
                         <div class="text-center text-muted py-4">
                             <i class="fas fa-list fa-3x mb-3"></i>
                             <p>No listings yet</p>
-                            <a href="#" class="btn btn-primary btn-sm">List Account</a>
+                            <a href="{{ url_for('list_account') }}" class="btn btn-primary btn-sm">List Account</a>
                         </div>
                     {% endif %}
                 </div>

@@ -1,0 +1,98 @@
+
+{% extends "base.html" %}
+
+{% block title %}Review Deposit - Admin{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-0">Review Deposit</h1>
+                    <p class="text-muted">Review and process wallet deposit</p>
+                </div>
+                <a href="{{ url_for('admin_deposits') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>Back to Deposits
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light border-0">
+                    <h6 class="mb-0 fw-bold">Deposit Details</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>User:</strong> {{ deposit.user.username }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Amount:</strong> ₦{{ "%.2f"|format(deposit.amount) }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Method:</strong> {{ deposit.deposit_method.replace('_', ' ').title() }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Bank:</strong> {{ deposit.bank_name }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Account Number:</strong> {{ deposit.account_number }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Account Name:</strong> {{ deposit.account_name }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Reference:</strong> {{ deposit.reference_number }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Date:</strong> {{ deposit.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                        </div>
+                    </div>
+                    
+                    {% if deposit.payment_proof %}
+                    <div class="mb-3">
+                        <strong>Payment Proof:</strong>
+                        <div class="mt-2">
+                            <a href="{{ url_for('uploaded_file', filename='payment_proofs/' + deposit.payment_proof) }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-file me-1"></i>View Proof
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light border-0">
+                    <h6 class="mb-0 fw-bold">Review Action</h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            {{ form.status.label(class="form-label") }}
+                            {{ form.status(class="form-select") }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.admin_notes.label(class="form-label") }}
+                            {{ form.admin_notes(class="form-control", rows="4") }}
+                        </div>
+                        
+                        <div class="d-grid">
+                            {{ form.submit(class="btn btn-primary") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -375,6 +375,77 @@ class WalletDepositForm(FlaskForm):
     ])
     submit = SubmitField('Submit Deposit')
 
+class AdminAccountReviewForm(FlaskForm):
+    status = SelectField('Status', choices=[
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected')
+    ], validators=[DataRequired()])
+    admin_notes = TextAreaField('Admin Notes', validators=[Optional()])
+    is_featured = BooleanField('Featured Account')
+    submit = SubmitField('Update Account')
+
+class AdminDepositReviewForm(FlaskForm):
+    status = SelectField('Status', choices=[
+        ('pending', 'Pending'),
+        ('confirmed', 'Confirmed'),
+        ('rejected', 'Rejected')
+    ], validators=[DataRequired()])
+    admin_notes = TextAreaField('Admin Notes', validators=[Optional()])
+    submit = SubmitField('Update Deposit')
+
+class AdminPurchaseReviewForm(FlaskForm):
+    status = SelectField('Status', choices=[
+        ('pending', 'Pending'),
+        ('confirmed', 'Confirmed'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled')
+    ], validators=[DataRequired()])
+    account_delivered = BooleanField('Account Delivered')
+    submit = SubmitField('Update Purchase')
+
+class AdminUserManagementForm(FlaskForm):
+    is_verified = BooleanField('Verified')
+    is_active = BooleanField('Active')
+    is_banned = BooleanField('Banned')
+    role = SelectField('Role', choices=[
+        ('user', 'User'),
+        ('admin', 'Admin')
+    ], validators=[DataRequired()])
+    submit = SubmitField('Update User')
+
+class PurchaseForm(FlaskForm):
+    payment_method = SelectField('Payment Method', choices=[
+        ('wallet', 'Wallet Balance'),
+        ('bank_transfer', 'Bank Transfer')
+    ], validators=[DataRequired()])
+    payment_reference = StringField('Payment Reference', validators=[Optional()])
+    payment_proof = FileField('Payment Proof', validators=[
+        Optional(),
+        FileAllowed(['jpg', 'png', 'pdf'], 'Images and PDF only!')
+    ])
+    submit = SubmitField('Complete Purchase')
+
+class SearchForm(FlaskForm):
+    platform = SelectField('Platform', choices=[], validators=[Optional()])
+    min_price = DecimalField('Min Price', validators=[Optional(), NumberRange(min=0)])
+    max_price = DecimalField('Max Price', validators=[Optional(), NumberRange(min=0)])
+    min_followers = IntegerField('Min Followers', validators=[Optional(), NumberRange(min=0)])
+    niche = StringField('Niche', validators=[Optional()])
+    submit = SubmitField('Search')
+
+class SettingsForm(FlaskForm):
+    site_name = StringField('Site Name', validators=[DataRequired()])
+    commission_rate = DecimalField('Commission Rate (%)', validators=[DataRequired(), NumberRange(min=0, max=100)], places=2)
+    referral_commission = DecimalField('Referral Commission (%)', validators=[DataRequired(), NumberRange(min=0, max=100)], places=2)
+    min_withdrawal = DecimalField('Min Withdrawal', validators=[DataRequired(), NumberRange(min=0)], places=2)
+    max_withdrawal = DecimalField('Max Withdrawal', validators=[DataRequired(), NumberRange(min=0)], places=2)
+    bank_name = StringField('Bank Name', validators=[Optional()])
+    account_number = StringField('Account Number', validators=[Optional()])
+    account_name = StringField('Account Name', validators=[Optional()])
+    admin_email = EmailField('Admin Email', validators=[Optional(), Email()])
+    submit = SubmitField('Save Settings')
+
 # Utility functions
 def allowed_file(filename, allowed_extensions):
     return '.' in filename and \
@@ -807,6 +878,208 @@ def admin_users():
     )
     
     return render_template('admin/users.html', users=users)
+
+@app.route('/admin/user/<int:id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def admin_manage_user(id):
+    user = User.query.get_or_404(id)
+    form = AdminUserManagementForm()
+    
+    if form.validate_on_submit():
+        user.is_verified = form.is_verified.data
+        user.is_active = form.is_active.data
+        user.is_banned = form.is_banned.data
+        user.role = form.role.data
+        
+        db.session.commit()
+        
+        flash('User updated successfully!', 'success')
+        return redirect(url_for('admin_users'))
+    
+    # Pre-populate form
+    form.is_verified.data = user.is_verified
+    form.is_active.data = user.is_active
+    form.is_banned.data = user.is_banned
+    form.role.data = user.role
+    
+    return render_template('admin/manage_user.html', user=user, form=form)
+
+@app.route('/admin/account/<int:id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def admin_review_account(id):
+    account = SocialAccount.query.get_or_404(id)
+    form = AdminAccountReviewForm()
+    
+    if form.validate_on_submit():
+        account.status = form.status.data
+        account.admin_notes = form.admin_notes.data
+        account.is_featured = form.is_featured.data
+        account.reviewed_by = current_user.id
+        account.reviewed_at = datetime.utcnow()
+        
+        db.session.commit()
+        
+        flash(f'Account {form.status.data} successfully!', 'success')
+        return redirect(url_for('admin_accounts'))
+    
+    # Pre-populate form
+    form.status.data = account.status
+    form.admin_notes.data = account.admin_notes
+    form.is_featured.data = account.is_featured
+    
+    return render_template('admin/review_account.html', account=account, form=form)
+
+@app.route('/admin/deposit/<int:id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def admin_review_deposit(id):
+    deposit = WalletDeposit.query.get_or_404(id)
+    form = AdminDepositReviewForm()
+    
+    if form.validate_on_submit():
+        if form.status.data == 'confirmed' and deposit.status == 'pending':
+            # Add to user wallet
+            deposit.user.wallet_balance += deposit.amount
+        
+        deposit.status = form.status.data
+        deposit.admin_notes = form.admin_notes.data
+        deposit.processed_by = current_user.id
+        deposit.processed_at = datetime.utcnow()
+        
+        db.session.commit()
+        
+        flash(f'Deposit {form.status.data} successfully!', 'success')
+        return redirect(url_for('admin_deposits'))
+    
+    return render_template('admin/review_deposit.html', deposit=deposit, form=form)
+
+@app.route('/admin/purchase/<int:id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def admin_review_purchase(id):
+    purchase = Purchase.query.get_or_404(id)
+    form = AdminPurchaseReviewForm()
+    
+    if form.validate_on_submit():
+        purchase.status = form.status.data
+        purchase.account_delivered = form.account_delivered.data
+        
+        if form.account_delivered.data:
+            purchase.delivery_date = datetime.utcnow()
+        
+        db.session.commit()
+        
+        flash(f'Purchase updated successfully!', 'success')
+        return redirect(url_for('admin_purchases'))
+    
+    return render_template('admin/review_purchase.html', purchase=purchase, form=form)
+
+@app.route('/admin/settings', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def admin_settings():
+    settings = Settings.query.first()
+    if not settings:
+        settings = Settings()
+        db.session.add(settings)
+        db.session.commit()
+    
+    form = SettingsForm(obj=settings)
+    
+    if form.validate_on_submit():
+        form.populate_obj(settings)
+        settings.updated_at = datetime.utcnow()
+        db.session.commit()
+        
+        flash('Settings updated successfully!', 'success')
+        return redirect(url_for('admin_settings'))
+    
+    return render_template('admin/settings.html', form=form, settings=settings)
+
+@app.route('/purchase/<int:id>', methods=['GET', 'POST'])
+@login_required
+def purchase_account(id):
+    account = SocialAccount.query.get_or_404(id)
+    
+    if account.status != 'approved':
+        flash('Account not available for purchase.', 'error')
+        return redirect(url_for('browse'))
+    
+    if account.seller_id == current_user.id:
+        flash('You cannot purchase your own account.', 'error')
+        return redirect(url_for('account_detail', account_id=id))
+    
+    form = PurchaseForm()
+    settings = Settings.query.first()
+    
+    # Calculate total with commission
+    commission = account.price * (settings.commission_rate / 100) if settings else Decimal('0')
+    total_amount = account.price + commission
+    
+    if form.validate_on_submit():
+        if form.payment_method.data == 'wallet':
+            if current_user.wallet_balance < total_amount:
+                flash('Insufficient wallet balance.', 'error')
+                return redirect(url_for('purchase_account', id=id))
+            
+            # Deduct from wallet
+            current_user.wallet_balance -= total_amount
+            
+            # Create purchase record
+            purchase = Purchase(
+                buyer_id=current_user.id,
+                account_id=account.id,
+                amount=account.price,
+                commission=commission,
+                total_amount=total_amount,
+                status='confirmed',
+                payment_method='wallet'
+            )
+            
+            # Mark account as sold
+            account.status = 'sold'
+            
+        else:  # Bank transfer
+            payment_proof_filename = None
+            if form.payment_proof.data:
+                payment_proof_filename = save_uploaded_file(
+                    form.payment_proof.data,
+                    'uploads/payment_proofs'
+                )
+            
+            purchase = Purchase(
+                buyer_id=current_user.id,
+                account_id=account.id,
+                amount=account.price,
+                commission=commission,
+                total_amount=total_amount,
+                status='pending',
+                payment_method='bank_transfer',
+                payment_proof=payment_proof_filename,
+                payment_reference=form.payment_reference.data
+            )
+        
+        db.session.add(purchase)
+        db.session.commit()
+        
+        # Generate invoice
+        invoice = Invoice(
+            user_id=current_user.id,
+            purchase_id=purchase.id,
+            invoice_number=f"INV-{uuid.uuid4().hex[:8].upper()}",
+            amount=account.price,
+            total_amount=total_amount
+        )
+        db.session.add(invoice)
+        db.session.commit()
+        
+        flash('Purchase submitted successfully!', 'success')
+        return redirect(url_for('my_purchases'))
+    
+    return render_template('purchase_account.html', account=account, form=form, 
+                         total_amount=total_amount, commission=commission)
 
 # PWA Routes
 @app.route('/manifest.json')
