@@ -1,120 +1,57 @@
 
 from run import app, db
 from models import Page, User
+from datetime import datetime
 
 def create_default_pages():
     with app.app_context():
-        # Create tables if they don't exist
-        db.create_all()
-        
-        # Get admin user
+        # Check if admin user exists
         admin = User.query.filter_by(role='admin').first()
         admin_id = admin.id if admin else None
         
-        # Default pages content
         default_pages = [
             {
-                'slug': 'help',
-                'title': 'Help Center',
+                'slug': 'privacy-policy',
+                'title': 'Privacy Policy',
                 'content': '''
-                <h2>Welcome to our Help Center</h2>
-                <p>Find answers to common questions and get support for using our platform.</p>
+                <h2>Privacy Policy</h2>
+                <p><em>Last updated: January 2025</em></p>
                 
-                <h3>Getting Started</h3>
+                <h3>Information We Collect</h3>
                 <ul>
-                    <li>How to create an account</li>
-                    <li>How to list your social media account</li>
-                    <li>How to purchase an account</li>
-                    <li>Understanding our verification process</li>
+                    <li>Account information (email, username)</li>
+                    <li>Profile details</li>
+                    <li>Transaction history</li>
+                    <li>Communication records</li>
                 </ul>
                 
-                <h3>Account Management</h3>
+                <h3>How We Use Your Information</h3>
                 <ul>
-                    <li>Managing your profile</li>
-                    <li>Wallet and payments</li>
-                    <li>Security settings</li>
+                    <li>To provide and maintain our service</li>
+                    <li>To process transactions</li>
+                    <li>To communicate with you</li>
+                    <li>To improve our platform</li>
                 </ul>
                 
-                <h3>Need More Help?</h3>
-                <p>If you can't find what you're looking for, please contact our support team.</p>
+                <h3>Information Sharing</h3>
+                <p>We do not sell or share your personal information with third parties except as described in this policy.</p>
+                
+                <h3>Data Security</h3>
+                <p>We implement appropriate security measures to protect your information.</p>
+                
+                <h3>Contact Us</h3>
+                <p>If you have questions about this privacy policy, please contact us.</p>
                 ''',
-                'meta_description': 'Get help and support for using our social media marketplace platform.',
-                'seo_title': 'Help Center - Get Support',
-                'seo_keywords': 'help, support, faq, guide, tutorial'
-            },
-            {
-                'slug': 'contact',
-                'title': 'Contact Us',
-                'content': '''
-                <h2>Get in Touch</h2>
-                <p>We'd love to hear from you. Here's how you can reach us.</p>
-                
-                <div style="margin: 2rem 0;">
-                    <h3>Customer Support</h3>
-                    <p><strong>Email:</strong> support@socialmarket.com</p>
-                    <p><strong>Response Time:</strong> Within 24 hours</p>
-                </div>
-                
-                <div style="margin: 2rem 0;">
-                    <h3>Business Inquiries</h3>
-                    <p><strong>Email:</strong> business@socialmarket.com</p>
-                    <p>For partnerships, advertising, and business opportunities</p>
-                </div>
-                
-                <div style="margin: 2rem 0;">
-                    <h3>Office Hours</h3>
-                    <p>Monday - Friday: 9:00 AM - 6:00 PM (GMT)</p>
-                    <p>Saturday: 10:00 AM - 4:00 PM (GMT)</p>
-                    <p>Sunday: Closed</p>
-                </div>
-                ''',
-                'meta_description': 'Contact our support team for help with your social media marketplace needs.',
-                'seo_title': 'Contact Us - Get Support',
-                'seo_keywords': 'contact, support, email, help, customer service'
-            },
-            {
-                'slug': 'safety-tips',
-                'title': 'Safety Tips',
-                'content': '''
-                <h2>Stay Safe While Trading</h2>
-                <p>Your security is our priority. Follow these guidelines to protect yourself.</p>
-                
-                <h3>For Buyers</h3>
-                <ul>
-                    <li>Always verify account details before purchasing</li>
-                    <li>Use our secure payment system</li>
-                    <li>Check seller ratings and reviews</li>
-                    <li>Report suspicious activity immediately</li>
-                </ul>
-                
-                <h3>For Sellers</h3>
-                <ul>
-                    <li>Provide accurate account information</li>
-                    <li>Respond to buyer inquiries promptly</li>
-                    <li>Transfer account details securely</li>
-                    <li>Keep records of all transactions</li>
-                </ul>
-                
-                <h3>Red Flags</h3>
-                <ul>
-                    <li>Requests for payment outside our platform</li>
-                    <li>Accounts with no verification</li>
-                    <li>Prices that seem too good to be true</li>
-                    <li>Pressure to complete transactions quickly</li>
-                </ul>
-                
-                <p><strong>Remember:</strong> If something doesn't feel right, trust your instincts and contact our support team.</p>
-                ''',
-                'meta_description': 'Important safety tips for buying and selling social media accounts securely.',
-                'seo_title': 'Safety Tips - Secure Trading',
-                'seo_keywords': 'safety, security, tips, trading, protection, scam prevention'
+                'meta_description': 'Privacy policy explaining how we collect, use, and protect your personal information.',
+                'seo_title': 'Privacy Policy - Data Protection',
+                'seo_keywords': 'privacy, policy, data protection, personal information, security'
             },
             {
                 'slug': 'terms-of-service',
                 'title': 'Terms of Service',
                 'content': '''
                 <h2>Terms of Service</h2>
-                <p><em>Last updated: [Date]</em></p>
+                <p><em>Last updated: January 2025</em></p>
                 
                 <h3>1. Acceptance of Terms</h3>
                 <p>By using our platform, you agree to these terms and conditions.</p>
@@ -151,48 +88,204 @@ def create_default_pages():
                 'seo_keywords': 'terms, service, agreement, legal, conditions, policy'
             },
             {
-                'slug': 'privacy-policy',
-                'title': 'Privacy Policy',
+                'slug': 'refund-policy',
+                'title': 'Refund Policy',
                 'content': '''
-                <h2>Privacy Policy</h2>
-                <p><em>Last updated: [Date]</em></p>
+                <h2>Refund Policy</h2>
+                <p><em>Last updated: January 2025</em></p>
                 
-                <h3>Information We Collect</h3>
+                <h3>Refund Eligibility</h3>
                 <ul>
-                    <li>Account information (email, username)</li>
-                    <li>Profile details</li>
-                    <li>Transaction history</li>
-                    <li>Communication records</li>
+                    <li>Account not delivered within 24 hours</li>
+                    <li>Account information is incorrect or invalid</li>
+                    <li>Account has been banned or suspended</li>
+                    <li>Seller misrepresented account details</li>
                 </ul>
                 
-                <h3>How We Use Your Information</h3>
+                <h3>Refund Process</h3>
+                <ol>
+                    <li>Contact our support team within 48 hours</li>
+                    <li>Provide proof of the issue</li>
+                    <li>Allow up to 5 business days for investigation</li>
+                    <li>Refund will be processed to your wallet</li>
+                </ol>
+                
+                <h3>Non-Refundable Items</h3>
                 <ul>
-                    <li>To provide our services</li>
-                    <li>To process transactions</li>
-                    <li>To communicate with you</li>
-                    <li>To improve our platform</li>
+                    <li>Accounts successfully delivered and working</li>
+                    <li>Digital goods that have been downloaded</li>
+                    <li>Custom work that has been completed</li>
                 </ul>
                 
-                <h3>Information Sharing</h3>
-                <p>We do not sell or share your personal information with third parties except as required by law or with your consent.</p>
+                <h3>Contact Support</h3>
+                <p>For refund requests, please contact our support team with your order details.</p>
+                ''',
+                'meta_description': 'Refund policy for social media account purchases and marketplace transactions.',
+                'seo_title': 'Refund Policy - Money Back Guarantee',
+                'seo_keywords': 'refund, policy, money back, guarantee, return, support'
+            },
+            {
+                'slug': 'cookie-policy',
+                'title': 'Cookie Policy',
+                'content': '''
+                <h2>Cookie Policy</h2>
+                <p><em>Last updated: January 2025</em></p>
                 
-                <h3>Data Security</h3>
-                <p>We implement appropriate security measures to protect your personal information.</p>
+                <h3>What Are Cookies</h3>
+                <p>Cookies are small text files that are stored on your device when you visit our website.</p>
                 
-                <h3>Your Rights</h3>
+                <h3>Types of Cookies We Use</h3>
                 <ul>
-                    <li>Access your personal data</li>
-                    <li>Correct inaccurate information</li>
-                    <li>Delete your account</li>
-                    <li>Export your data</li>
+                    <li><strong>Essential Cookies:</strong> Required for the website to function</li>
+                    <li><strong>Analytics Cookies:</strong> Help us understand how you use our site</li>
+                    <li><strong>Preference Cookies:</strong> Remember your settings and preferences</li>
                 </ul>
+                
+                <h3>Managing Cookies</h3>
+                <p>You can control and delete cookies through your browser settings. Note that disabling certain cookies may affect website functionality.</p>
+                
+                <h3>Third-Party Cookies</h3>
+                <p>We may use third-party services that place cookies on your device for analytics and advertising purposes.</p>
                 
                 <h3>Contact Us</h3>
-                <p>For privacy-related questions, contact us at privacy@socialmarket.com</p>
+                <p>If you have questions about our cookie policy, please contact us.</p>
                 ''',
-                'meta_description': 'Our privacy policy explaining how we collect, use, and protect your personal information.',
-                'seo_title': 'Privacy Policy - Data Protection',
-                'seo_keywords': 'privacy, policy, data, protection, personal information, security'
+                'meta_description': 'Cookie policy explaining how we use cookies and similar technologies on our website.',
+                'seo_title': 'Cookie Policy - Website Cookies',
+                'seo_keywords': 'cookies, policy, tracking, analytics, privacy, browser'
+            },
+            {
+                'slug': 'help',
+                'title': 'Help Center',
+                'content': '''
+                <h2>Help Center</h2>
+                
+                <h3>Getting Started</h3>
+                <h4>How to Buy an Account</h4>
+                <ol>
+                    <li>Browse our marketplace</li>
+                    <li>Select an account you want to purchase</li>
+                    <li>Choose your payment method</li>
+                    <li>Complete the transaction</li>
+                    <li>Receive account details</li>
+                </ol>
+                
+                <h4>How to Sell an Account</h4>
+                <ol>
+                    <li>Create a seller account</li>
+                    <li>List your social media account</li>
+                    <li>Wait for admin approval</li>
+                    <li>Receive purchase notifications</li>
+                    <li>Deliver account details to buyer</li>
+                </ol>
+                
+                <h3>Payment Methods</h3>
+                <ul>
+                    <li>Wallet balance</li>
+                    <li>Bank transfer</li>
+                    <li>Cash deposit</li>
+                </ul>
+                
+                <h3>Common Questions</h3>
+                <h4>Is it safe to buy accounts here?</h4>
+                <p>Yes, we verify all accounts before approval and offer buyer protection.</p>
+                
+                <h4>How long does delivery take?</h4>
+                <p>Most accounts are delivered within 24 hours of purchase.</p>
+                
+                <h3>Contact Support</h3>
+                <p>Need more help? Contact our support team for assistance.</p>
+                ''',
+                'meta_description': 'Help center with guides for buying and selling social media accounts safely.',
+                'seo_title': 'Help Center - Support and Guides',
+                'seo_keywords': 'help, support, guide, tutorial, faq, assistance'
+            },
+            {
+                'slug': 'contact',
+                'title': 'Contact Us',
+                'content': '''
+                <h2>Contact Us</h2>
+                
+                <h3>Get in Touch</h3>
+                <p>We're here to help! Contact us through any of the following methods:</p>
+                
+                <h3>Support Channels</h3>
+                <ul>
+                    <li><strong>Email:</strong> support@socialmarket.com</li>
+                    <li><strong>WhatsApp:</strong> +1234567890</li>
+                    <li><strong>Telegram:</strong> @socialmarketsupport</li>
+                </ul>
+                
+                <h3>Business Hours</h3>
+                <ul>
+                    <li>Monday - Friday: 9:00 AM - 6:00 PM</li>
+                    <li>Saturday: 10:00 AM - 4:00 PM</li>
+                    <li>Sunday: Closed</li>
+                </ul>
+                
+                <h3>Response Times</h3>
+                <ul>
+                    <li>Email: Within 24 hours</li>
+                    <li>WhatsApp: Within 2 hours</li>
+                    <li>Telegram: Within 1 hour</li>
+                </ul>
+                
+                <h3>Before Contacting Us</h3>
+                <p>Please check our Help Center for answers to common questions.</p>
+                
+                <p>We look forward to hearing from you!</p>
+                ''',
+                'meta_description': 'Contact information and support channels for customer assistance.',
+                'seo_title': 'Contact Us - Customer Support',
+                'seo_keywords': 'contact, support, help, email, whatsapp, telegram'
+            },
+            {
+                'slug': 'safety-tips',
+                'title': 'Safety Tips',
+                'content': '''
+                <h2>Safety Tips</h2>
+                
+                <h3>For Buyers</h3>
+                <ul>
+                    <li>Always use our secure payment system</li>
+                    <li>Verify account details before purchase</li>
+                    <li>Check seller ratings and reviews</li>
+                    <li>Report suspicious listings</li>
+                    <li>Change passwords immediately after purchase</li>
+                </ul>
+                
+                <h3>For Sellers</h3>
+                <ul>
+                    <li>Provide accurate account information</li>
+                    <li>Upload genuine screenshots</li>
+                    <li>Respond promptly to buyer inquiries</li>
+                    <li>Only sell accounts you own</li>
+                    <li>Follow platform guidelines</li>
+                </ul>
+                
+                <h3>Red Flags to Watch For</h3>
+                <ul>
+                    <li>Requests for payment outside the platform</li>
+                    <li>Accounts with suspicious activity</li>
+                    <li>Sellers with no ratings or reviews</li>
+                    <li>Prices that seem too good to be true</li>
+                    <li>Poor quality screenshots or descriptions</li>
+                </ul>
+                
+                <h3>Reporting Issues</h3>
+                <p>If you encounter any problems, report them to our support team immediately.</p>
+                
+                <h3>Account Security</h3>
+                <ul>
+                    <li>Use strong, unique passwords</li>
+                    <li>Enable two-factor authentication</li>
+                    <li>Keep your account information private</li>
+                    <li>Log out from shared devices</li>
+                </ul>
+                ''',
+                'meta_description': 'Important safety tips for buying and selling social media accounts securely.',
+                'seo_title': 'Safety Tips - Secure Trading',
+                'seo_keywords': 'safety, security, tips, trading, protection, scam prevention'
             }
         ]
         
@@ -216,7 +309,7 @@ def create_default_pages():
                 print(f"Page already exists: {page_data['title']}")
         
         db.session.commit()
-        print("Default pages initialization completed!")
+        print("Default pages initialized successfully!")
 
 if __name__ == '__main__':
     create_default_pages()
