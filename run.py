@@ -1,3 +1,4 @@
+
 import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -51,21 +52,14 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 # Import routes after app initialization
-try:
-    from routes import *
-except ImportError:
-    print("Routes not found, using simple routes")
-    try:
-        from routes_simple import register_routes
-        register_routes(app, db)
-    except ImportError:
-        print("No routes found")
+from routes import *
 
 if __name__ == '__main__':
     # Ensure instance directory exists
     os.makedirs('instance', exist_ok=True)
     os.makedirs('uploads', exist_ok=True)
     os.makedirs('uploads/account_screenshots', exist_ok=True)
+    os.makedirs('uploads/payment_proofs', exist_ok=True)
 
     with app.app_context():
         db.create_all()

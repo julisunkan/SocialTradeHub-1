@@ -2,20 +2,32 @@ from flask import render_template, request, redirect, url_for, flash, jsonify, s
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-from app import app, db, mail, limiter
-from models import *
-from forms import *
-
-@app.context_processor
-def inject_settings():
-    settings = Settings.query.first()
-    return dict(settings=settings)
 from datetime import datetime, timedelta
 from decimal import Decimal
 import os
 import json
 import uuid
 from PIL import Image
+
+# Import from run.py instead of app.py
+from run import app, db, mail, limiter
+from models import *
+from forms import *
+
+def admin_required(f):
+    from functools import wraps
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or current_user.role != 'admin':
+            flash('Access denied. Admin privileges required.', 'error')
+            return redirect(url_for('index'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+@app.context_processor
+def inject_settings():
+    settings = Settings.query.first()
+    return dict(settings=settings)
 
 def allowed_file(filename, allowed_extensions):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
