@@ -1,0 +1,122 @@
+
+{% extends "base.html" %}
+
+{% block title %}Wallet - SocialMarket{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">My Wallet</h1>
+                    <p class="text-muted">Manage your wallet balance and deposits</p>
+                </div>
+                <a href="{{ url_for('deposit') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-1"></i>Make Deposit
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wallet Balance -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="bg-success bg-opacity-10 rounded-3 p-3 d-inline-block mb-3">
+                        <i class="fas fa-wallet text-success fa-2x"></i>
+                    </div>
+                    <h3 class="mb-0">₦{{ "%.2f"|format(current_user.wallet_balance) }}</h3>
+                    <p class="text-muted mb-0">Available Balance</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="bg-info bg-opacity-10 rounded-3 p-3 d-inline-block mb-3">
+                        <i class="fas fa-coins text-info fa-2x"></i>
+                    </div>
+                    <h3 class="mb-0">₦{{ "%.2f"|format(current_user.referral_earnings) }}</h3>
+                    <p class="text-muted mb-0">Referral Earnings</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Deposits -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white">
+            <h5 class="card-title mb-0">Recent Deposits</h5>
+        </div>
+        <div class="card-body">
+            {% if deposits.items %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Method</th>
+                            <th>Status</th>
+                            <th>Reference</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for deposit in deposits.items %}
+                        <tr>
+                            <td>{{ deposit.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>₦{{ "%.2f"|format(deposit.amount) }}</td>
+                            <td>{{ deposit.deposit_method.replace('_', ' ').title() }}</td>
+                            <td>
+                                {% if deposit.status == 'confirmed' %}
+                                    <span class="badge bg-success">Confirmed</span>
+                                {% elif deposit.status == 'pending' %}
+                                    <span class="badge bg-warning">Pending</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Rejected</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ deposit.reference_number or 'N/A' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if deposits.pages > 1 %}
+            <nav aria-label="Deposits pagination">
+                <ul class="pagination justify-content-center">
+                    {% for page_num in deposits.iter_pages() %}
+                        {% if page_num %}
+                            {% if page_num != deposits.page %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('wallet', page=page_num) }}">{{ page_num }}</a>
+                                </li>
+                            {% else %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                            {% endif %}
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </nav>
+            {% endif %}
+            {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-receipt fa-3x text-muted mb-3"></i>
+                <p class="text-muted">No deposits found</p>
+                <a href="{{ url_for('deposit') }}" class="btn btn-primary">Make Your First Deposit</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

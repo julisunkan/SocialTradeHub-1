@@ -1,0 +1,113 @@
+
+{% extends "base.html" %}
+
+{% block title %}My Listings - SocialMarket{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">My Listings</h1>
+                    <p class="text-muted">Manage your social media accounts for sale</p>
+                </div>
+                <a href="{{ url_for('list_account') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-1"></i>List New Account
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {% if accounts.items %}
+    <div class="row">
+        {% for account in accounts.items %}
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h5 class="card-title mb-1">
+                                <i class="fab fa-{{ account.platform.lower() }} me-2"></i>{{ account.username }}
+                            </h5>
+                            <p class="text-muted mb-0">{{ account.platform.title() }}</p>
+                        </div>
+                        <div class="text-end">
+                            <h5 class="text-success mb-0">₦{{ "%.2f"|format(account.price) }}</h5>
+                            {% if account.status == 'approved' %}
+                                <span class="badge bg-success">Approved</span>
+                            {% elif account.status == 'pending' %}
+                                <span class="badge bg-warning">Pending</span>
+                            {% elif account.status == 'rejected' %}
+                                <span class="badge bg-danger">Rejected</span>
+                            {% else %}
+                                <span class="badge bg-info">{{ account.status.title() }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <small class="text-muted">Followers</small>
+                            <div class="fw-bold">{{ "{:,}".format(account.followers_count) }}</div>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Listed</small>
+                            <div class="fw-bold">{{ account.created_at.strftime('%Y-%m-%d') }}</div>
+                        </div>
+                    </div>
+                    
+                    <p class="card-text">{{ account.description[:100] }}{% if account.description|length > 100 %}...{% endif %}</p>
+                    
+                    <div class="d-flex gap-2">
+                        {% if account.status == 'approved' %}
+                        <a href="{{ url_for('account_detail', account_id=account.id) }}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-eye me-1"></i>View
+                        </a>
+                        {% endif %}
+                        <button class="btn btn-outline-secondary btn-sm" disabled>
+                            <i class="fas fa-edit me-1"></i>Edit
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if accounts.pages > 1 %}
+    <nav aria-label="Listings pagination">
+        <ul class="pagination justify-content-center">
+            {% for page_num in accounts.iter_pages() %}
+                {% if page_num %}
+                    {% if page_num != accounts.page %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('my_listings', page=page_num) }}">{{ page_num }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                    {% endif %}
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </nav>
+    {% endif %}
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-list fa-3x text-muted mb-3"></i>
+        <h4>No Listings Yet</h4>
+        <p class="text-muted">Start selling your social media accounts</p>
+        <a href="{{ url_for('list_account') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i>List Your First Account
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,139 @@
+
+{% extends "base.html" %}
+
+{% block title %}Referrals - SocialMarket{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h3 mb-4">Referral Program</h1>
+        </div>
+    </div>
+
+    <!-- Referral Stats -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="bg-primary bg-opacity-10 rounded-3 p-3 d-inline-block mb-3">
+                        <i class="fas fa-users text-primary fa-2x"></i>
+                    </div>
+                    <h3 class="mb-0">{{ referral_stats.total_referrals }}</h3>
+                    <p class="text-muted mb-0">Total Referrals</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="bg-success bg-opacity-10 rounded-3 p-3 d-inline-block mb-3">
+                        <i class="fas fa-coins text-success fa-2x"></i>
+                    </div>
+                    <h3 class="mb-0">₦{{ "%.2f"|format(referral_stats.total_earnings) }}</h3>
+                    <p class="text-muted mb-0">Total Earnings</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="bg-warning bg-opacity-10 rounded-3 p-3 d-inline-block mb-3">
+                        <i class="fas fa-clock text-warning fa-2x"></i>
+                    </div>
+                    <h3 class="mb-0">{{ referral_stats.pending_earnings }}</h3>
+                    <p class="text-muted mb-0">Pending</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Referral Code -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Your Referral Code</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Share your referral code and earn 2% commission on every purchase made by your referrals.</p>
+                    <div class="input-group">
+                        <input type="text" class="form-control" value="{{ referral_code }}" readonly id="referralCode">
+                        <button class="btn btn-outline-primary" type="button" onclick="copyReferralCode()">
+                            <i class="fas fa-copy me-1"></i>Copy
+                        </button>
+                    </div>
+                    <small class="text-muted">Share this code with friends to earn referral commissions.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Referrals List -->
+    {% if referrals %}
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white">
+            <h5 class="card-title mb-0">Your Referrals</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Joined Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for referral in referrals %}
+                        <tr>
+                            <td>{{ referral.username }}</td>
+                            <td>{{ referral.email }}</td>
+                            <td>{{ referral.created_at.strftime('%Y-%m-%d') }}</td>
+                            <td>
+                                {% if referral.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Inactive</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-user-friends fa-3x text-muted mb-3"></i>
+        <h4>No Referrals Yet</h4>
+        <p class="text-muted">Start referring friends to earn commissions</p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function copyReferralCode() {
+    const referralCode = document.getElementById('referralCode');
+    referralCode.select();
+    referralCode.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(referralCode.value);
+    
+    // Show success message
+    const button = event.target.closest('button');
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-check me-1"></i>Copied!';
+    button.classList.remove('btn-outline-primary');
+    button.classList.add('btn-success');
+    
+    setTimeout(() => {
+        button.innerHTML = originalText;
+        button.classList.remove('btn-success');
+        button.classList.add('btn-outline-primary');
+    }, 2000);
+}
+</script>
+{% endblock %}

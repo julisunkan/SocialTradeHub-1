@@ -236,6 +236,31 @@ class Settings(db.Model):
     # Timestamps
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+class Notification(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    title = db.Column(db.String(200), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    is_read = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class Referral(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    referrer_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    referred_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    commission_type = db.Column(db.String(50), default='signup')
+    commission_paid = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class Invoice(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    purchase_id = db.Column(db.Integer, db.ForeignKey('purchase.id'), nullable=False)
+    invoice_number = db.Column(db.String(50), unique=True, nullable=False)
+    amount = db.Column(db.Numeric(10, 2), nullable=False)
+    total_amount = db.Column(db.Numeric(10, 2), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -479,6 +504,84 @@ def account_detail(account_id):
     ).limit(4).all()
     
     return render_template('account_detail.html', account=account, similar_accounts=similar_accounts)
+
+@app.route('/wallet')
+@login_required
+def wallet():
+    page = request.args.get('page', 1, type=int)
+    deposits = WalletDeposit.query.filter_by(user_id=current_user.id).order_by(
+        WalletDeposit.created_at.desc()
+    ).paginate(page=page, per_page=10, error_out=False)
+    
+    return render_template('wallet.html', deposits=deposits)
+
+@app.route('/deposit', methods=['GET', 'POST'])
+@login_required
+def deposit():
+    from forms import WalletDepositForm
+    form = WalletDepositForm()
+    settings = Settings.query.first()
+    
+    if form.validate_on_submit():
+        payment_proof_filename = None
+        if form.payment_proof.data:
+            payment_proof_filename = save_uploaded_file(
+                form.payment_proof.data,
+                'uploads/payment_proofs'
+            )
+        
+        deposit = WalletDeposit(
+            user_id=current_user.id,
+            amount=form.amount.data,
+            deposit_method=form.deposit_method.data,
+            bank_name=form.bank_name.data,
+            account_number=form.account_number.data,
+            account_name=form.account_name.data,
+            reference_number=form.reference_number.data,
+            payment_proof=payment_proof_filename
+        )
+        
+        db.session.add(deposit)
+        db.session.commit()
+        
+        flash('Deposit request submitted successfully!', 'success')
+        return redirect(url_for('wallet'))
+    
+    return render_template('deposit.html', form=form, settings=settings)
+
+@app.route('/my-listings')
+@login_required
+def my_listings():
+    page = request.args.get('page', 1, type=int)
+    accounts = SocialAccount.query.filter_by(seller_id=current_user.id).order_by(
+        SocialAccount.created_at.desc()
+    ).paginate(page=page, per_page=10, error_out=False)
+    
+    return render_template('my_listings.html', accounts=accounts)
+
+@app.route('/my-purchases')
+@login_required
+def my_purchases():
+    page = request.args.get('page', 1, type=int)
+    purchases = Purchase.query.filter_by(buyer_id=current_user.id).order_by(
+        Purchase.created_at.desc()
+    ).paginate(page=page, per_page=10, error_out=False)
+    
+    return render_template('my_purchases.html', purchases=purchases)
+
+@app.route('/referrals')
+@login_required
+def referrals():
+    referrals = User.query.filter_by(referred_by=current_user.id).all()
+    referral_stats = {
+        'total_referrals': len(referrals),
+        'total_earnings': current_user.referral_earnings,
+        'pending_earnings': 0  # You can implement this logic later
+    }
+    
+    return render_template('referrals.html', referrals=referrals, 
+                         referral_stats=referral_stats, 
+                         referral_code=current_user.referral_code)
 
 @app.route('/admin')
 @login_required
