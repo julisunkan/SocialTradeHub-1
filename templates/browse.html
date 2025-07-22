@@ -79,7 +79,7 @@
                 <div class="card-body">
                     <h5 class="card-title">@{{ account.username }}</h5>
                     <p class="text-muted mb-2">{{ account.niche }}</p>
-                    
+
                     <div class="account-stats mb-3">
                         <div class="row g-2 text-center">
                             <div class="col-6">
@@ -96,7 +96,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     {% if account.engagement_rate %}
                     <div class="mb-3">
                         <small class="text-muted">Engagement Rate</small>
@@ -106,10 +106,10 @@
                         <small class="text-success">{{ account.engagement_rate }}%</small>
                     </div>
                     {% endif %}
-                    
+
                     <div class="d-flex justify-content-between align-items-center">
                         <h4 class="text-success mb-0">₦{{ "{:,.2f}".format(account.price) }}</h4>
-                        <a href="{{ url_for('account_detail', account_id=account.id) }}" class="btn btn-primary">
+                        <a href="{{ url_for('account_detail', id=account.id) }}" class="btn btn-primary">
                             View Details
                         </a>
                     </div>
@@ -138,7 +138,7 @@
                         </a>
                     </li>
                     {% endif %}
-                    
+
                     {% for page_num in accounts.iter_pages() %}
                         {% if page_num %}
                             {% if page_num != accounts.page %}
@@ -156,7 +156,7 @@
                         </li>
                         {% endif %}
                     {% endfor %}
-                    
+
                     {% if accounts.has_next %}
                     <li class="page-item">
                         <a class="page-link" href="{{ url_for('browse', page=accounts.next_num, **request.args) }}">

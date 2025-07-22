@@ -61,7 +61,7 @@
                     
                     <div class="d-flex gap-2">
                         {% if account.status == 'approved' %}
-                        <a href="{{ url_for('account_detail', account_id=account.id) }}" class="btn btn-outline-primary btn-sm">
+                        <a href="{{ url_for('account_detail', id=account.id) }}" class="btn btn-outline-primary btn-sm">
                             <i class="fas fa-eye me-1"></i>View
                         </a>
                         {% endif %}
