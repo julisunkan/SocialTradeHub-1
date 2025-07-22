@@ -1,11 +1,11 @@
+
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from datetime import datetime
 from decimal import Decimal
 import uuid
 
-# db will be imported from app.py
-db = None
+db = SQLAlchemy()
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
