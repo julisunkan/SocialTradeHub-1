@@ -225,6 +225,14 @@ class Settings(db.Model):
     bank_name = db.Column(db.String(100))
     account_number = db.Column(db.String(20))
     account_name = db.Column(db.String(100))
+    
+    # Second bank account (optional)
+    bank_name_2 = db.Column(db.String(100))
+    account_number_2 = db.Column(db.String(20))
+    account_name_2 = db.Column(db.String(100))
+    
+    # Payment instructions
+    payment_instructions = db.Column(db.Text)
 
     # Social media links
     facebook_url = db.Column(db.String(255))

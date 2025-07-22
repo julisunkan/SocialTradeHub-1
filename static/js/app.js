@@ -2,9 +2,30 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize tooltips
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
     var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+
+    // Fix account details collapsing
+    const accountDetailsCollapse = document.getElementById('accountDetails');
+    if (accountDetailsCollapse) {
+        // Prevent auto-collapse
+        accountDetailsCollapse.addEventListener('show.bs.collapse', function (e) {
+            // Keep it open
+        });
+    }
+
+    // Show success messages for form submissions
+    const forms = document.querySelectorAll('form');
+    forms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
+            if (submitBtn) {
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Processing...';
+                submitBtn.disabled = true;
+            }
+        });
     });
 
     // Auto-hide flash messages
@@ -26,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (submitBtn) {
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<span class="spinner me-2"></span>Processing...';
-                
+
                 // Re-enable after 5 seconds to prevent infinite disable
                 setTimeout(() => {
                     submitBtn.disabled = false;
@@ -125,7 +146,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Toast notifications
     function showToast(message, type = 'info') {
         const toastContainer = document.getElementById('toastContainer') || createToastContainer();
-        
+
         const toast = document.createElement('div');
         toast.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
         toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
@@ -133,9 +154,9 @@ document.addEventListener('DOMContentLoaded', function() {
             ${message}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         `;
-        
+
         toastContainer.appendChild(toast);
-        
+
         // Auto remove after 5 seconds
         setTimeout(() => {
             if (toast.parentNode) {
@@ -164,7 +185,7 @@ document.addEventListener('DOMContentLoaded', function() {
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
-        
+
         // Show install button
         const installButton = document.getElementById('pwa-install-btn');
         if (installButton) {
@@ -222,10 +243,10 @@ function formatFollowers(count) {
 function validateForm(formId) {
     const form = document.getElementById(formId);
     if (!form) return false;
-    
+
     const requiredFields = form.querySelectorAll('[required]');
     let isValid = true;
-    
+
     requiredFields.forEach(field => {
         if (!field.value.trim()) {
             field.classList.add('is-invalid');
@@ -234,7 +255,7 @@ function validateForm(formId) {
             field.classList.remove('is-invalid');
         }
     });
-    
+
     return isValid;
 }
 
@@ -242,9 +263,9 @@ function validateForm(formId) {
 function loadContent(url, containerId) {
     const container = document.getElementById(containerId);
     if (!container) return;
-    
+
     container.innerHTML = '<div class="text-center p-4"><div class="spinner mx-auto"></div></div>';
-    
+
     fetch(url)
         .then(response => response.text())
         .then(html => {

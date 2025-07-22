@@ -195,13 +195,19 @@ class SettingsForm(FlaskForm):
 
     # Bank details
     bank_name = StringField('Bank Name', validators=[DataRequired(), Length(max=100)])
-    bank_account_number = StringField('Account Number', validators=[DataRequired(), Length(max=20)])
-    bank_account_name = StringField('Account Name', validators=[DataRequired(), Length(max=100)])
+    account_number = StringField('Account Number', validators=[DataRequired(), Length(max=20)])
+    account_name = StringField('Account Name', validators=[DataRequired(), Length(max=100)])
+    
+    # Second bank account (optional)
+    bank_name_2 = StringField('Bank Name 2 (Optional)', validators=[Optional(), Length(max=100)])
+    account_number_2 = StringField('Account Number 2 (Optional)', validators=[Optional(), Length(max=20)])
+    account_name_2 = StringField('Account Name 2 (Optional)', validators=[Optional(), Length(max=100)])
+    
+    # Payment instructions
+    payment_instructions = TextAreaField('Payment Instructions', validators=[Optional()])
 
     # Contact information
     admin_email = EmailField('Admin Email', validators=[DataRequired(), Email()])
-    support_email = EmailField('Support Email', validators=[Email()])
-    phone_number = StringField('Phone Number', validators=[Length(max=20)])
 
     # Social media links
     facebook_url = StringField('Facebook URL', validators=[Optional()])
@@ -209,6 +215,17 @@ class SettingsForm(FlaskForm):
     instagram_url = StringField('Instagram URL', validators=[Optional()])
     telegram_url = StringField('Telegram URL', validators=[Optional()])
     whatsapp_url = StringField('WhatsApp URL', validators=[Optional()])
+
+    # Footer links
+    help_center_url = StringField('Help Center URL', validators=[Optional()])
+    contact_us_url = StringField('Contact Us URL', validators=[Optional()])
+    safety_tips_url = StringField('Safety Tips URL', validators=[Optional()])
+    terms_of_service_url = StringField('Terms of Service URL', validators=[Optional()])
+    privacy_policy_url = StringField('Privacy Policy URL', validators=[Optional()])
+    refund_policy_url = StringField('Refund Policy URL', validators=[Optional()])
+    cookie_policy_url = StringField('Cookie Policy URL', validators=[Optional()])
+    how_it_works_url = StringField('How It Works URL', validators=[Optional()])
+    pricing_url = StringField('Pricing URL', validators=[Optional()])
 
     submit = SubmitField('Save Settings')
 

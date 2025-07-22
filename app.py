@@ -109,10 +109,27 @@ def save_uploaded_file(file, upload_path, max_size=(800, 600)):
         os.makedirs(upload_path, exist_ok=True)
 
         if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif')):
-            # Resize image if it's too large
+            # Resize and compress image to be under 15KB
             image = Image.open(file)
             image.thumbnail(max_size, Image.Resampling.LANCZOS)
-            image.save(filepath, optimize=True, quality=85)
+            
+            # Start with high quality and reduce until file is under 15KB
+            quality = 95
+            temp_path = filepath + '.temp'
+            
+            while quality > 10:
+                image.save(temp_path, optimize=True, quality=quality)
+                if os.path.getsize(temp_path) <= 15 * 1024:  # 15KB
+                    break
+                quality -= 5
+            
+            # Move temp file to final location
+            os.rename(temp_path, filepath)
+            
+            # If still too large, resize further
+            if os.path.getsize(filepath) > 15 * 1024:
+                image.thumbnail((400, 300), Image.Resampling.LANCZOS)
+                image.save(filepath, optimize=True, quality=60)
         else:
             file.save(filepath)
 
@@ -384,25 +401,34 @@ def deposit():
     settings = Settings.query.first()
 
     if form.validate_on_submit():
-        payment_proof_filename = None
-        if form.payment_proof.data:
-            payment_proof_filename = save_uploaded_file(
-                form.payment_proof.data,
-                'uploads/payment_proofs'
+        try:
+            payment_proof_filename = None
+            if form.payment_proof.data:
+                payment_proof_filename = save_uploaded_file(
+                    form.payment_proof.data,
+                    'uploads/payment_proofs'
+                )
+
+            deposit = WalletDeposit(
+                user_id=current_user.id,
+                amount=form.amount.data,
+                deposit_method=form.deposit_method.data,
+                bank_name=form.bank_name.data,
+                account_number=form.account_number.data,
+                account_name=form.account_name.data,
+                reference_number=form.reference_number.data,
+                payment_proof=payment_proof_filename,
+                status='pending'
             )
 
-        deposit = WalletDeposit(
-            user_id=current_user.id,
-            amount=form.amount.data,
-            reference_number=form.reference_number.data,
-            payment_proof=payment_proof_filename
-        )
+            db.session.add(deposit)
+            db.session.commit()
 
-        db.session.add(deposit)
-        db.session.commit()
-
-        flash('Deposit request submitted successfully!', 'success')
-        return redirect(url_for('wallet'))
+            flash('Deposit request submitted successfully! Please wait for admin approval.', 'success')
+            return redirect(url_for('wallet'))
+        except Exception as e:
+            db.session.rollback()
+            flash('Error submitting deposit request. Please try again.', 'error')
 
     return render_template('deposit.html', form=form, settings=settings)
 
@@ -722,6 +748,43 @@ def admin_delete_page(id):
     flash('Page deleted successfully!', 'success')
     return redirect(url_for('admin_pages'))
 
+@app.route('/admin/footer-links', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def admin_footer_links():
+    settings = Settings.query.first()
+    if not settings:
+        settings = Settings()
+        db.session.add(settings)
+        db.session.commit()
+
+    if request.method == 'POST':
+        # Update footer links
+        settings.help_center_url = request.form.get('help_center_url', '')
+        settings.contact_us_url = request.form.get('contact_us_url', '')
+        settings.safety_tips_url = request.form.get('safety_tips_url', '')
+        settings.terms_of_service_url = request.form.get('terms_of_service_url', '')
+        settings.privacy_policy_url = request.form.get('privacy_policy_url', '')
+        settings.refund_policy_url = request.form.get('refund_policy_url', '')
+        settings.cookie_policy_url = request.form.get('cookie_policy_url', '')
+        settings.how_it_works_url = request.form.get('how_it_works_url', '')
+        settings.pricing_url = request.form.get('pricing_url', '')
+        
+        # Update social media links
+        settings.facebook_url = request.form.get('facebook_url', '')
+        settings.twitter_url = request.form.get('twitter_url', '')
+        settings.instagram_url = request.form.get('instagram_url', '')
+        settings.telegram_url = request.form.get('telegram_url', '')
+        settings.whatsapp_url = request.form.get('whatsapp_url', '')
+        
+        settings.updated_at = datetime.utcnow()
+        db.session.commit()
+        
+        flash('Footer links updated successfully!', 'success')
+        return redirect(url_for('admin_footer_links'))
+    
+    return render_template('admin/footer_links.html', settings=settings)
+
 @app.route('/purchase/<int:id>', methods=['GET', 'POST'])
 @login_required
 def purchase_account(id):
@@ -857,13 +920,16 @@ def internal_error(error):
     db.session.rollback()
     return render_template('errors/500.html'), 500
 
-if __name__ == '__main__':
+def initialize_app():
+    """Initialize database and default data only if needed"""
     with app.app_context():
+        # Create tables if they don't exist
         db.create_all()
 
-        # Create admin user if not exists
+        # Create admin user only if not exists
         admin = User.query.filter_by(email='admin@socialmedia.com').first()
         if not admin:
+            print("Creating default admin user...")
             admin_user = User(
                 username='admin',
                 email='admin@socialmedia.com',
@@ -873,8 +939,13 @@ if __name__ == '__main__':
                 is_active=True
             )
             db.session.add(admin_user)
+            db.session.commit()
+            print("Admin user created: admin@socialmedia.com / admin123")
 
-            # Create default settings
+        # Create default settings only if not exists
+        settings = Settings.query.first()
+        if not settings:
+            print("Creating default settings...")
             default_settings = Settings(
                 site_name='SocialMarket',
                 currency_symbol='₦',
@@ -883,9 +954,15 @@ if __name__ == '__main__':
                 referral_commission=Decimal('2.0'),
                 min_withdrawal=Decimal('1000'),
                 max_withdrawal=Decimal('1000000'),
-                admin_email='admin@socialmedia.com'
+                admin_email='admin@socialmedia.com',
+                bank_name='First Bank Nigeria',
+                account_number='0123456789',
+                account_name='SocialMarket Ltd'
             )
             db.session.add(default_settings)
             db.session.commit()
+            print("Default settings created.")
 
+if __name__ == '__main__':
+    initialize_app()
     app.run(host='0.0.0.0', port=5000, debug=True)

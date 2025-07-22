@@ -1,0 +1,184 @@
+
+{% extends "base.html" %}
+
+{% block title %}Footer Links Management - SocialMarket{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-0">Footer Links Management</h1>
+                    <p class="text-muted">Manage all footer and social media links</p>
+                </div>
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <form method="POST">
+        <div class="row">
+            <!-- Footer Support Links -->
+            <div class="col-lg-6 mb-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-info text-white border-0">
+                        <h6 class="mb-0 fw-bold">
+                            <i class="fas fa-life-ring me-1"></i>Support Links
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Help Center URL</label>
+                            <input type="text" name="help_center_url" class="form-control" 
+                                   value="{{ settings.help_center_url or '' }}" 
+                                   placeholder="/help or https://external-help.com">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Contact Us URL</label>
+                            <input type="text" name="contact_us_url" class="form-control" 
+                                   value="{{ settings.contact_us_url or '' }}" 
+                                   placeholder="/contact">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Safety Tips URL</label>
+                            <input type="text" name="safety_tips_url" class="form-control" 
+                                   value="{{ settings.safety_tips_url or '' }}" 
+                                   placeholder="/safety-tips">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Legal Links -->
+            <div class="col-lg-6 mb-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-success text-white border-0">
+                        <h6 class="mb-0 fw-bold">
+                            <i class="fas fa-file-contract me-1"></i>Legal Links
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Terms of Service URL</label>
+                            <input type="text" name="terms_of_service_url" class="form-control" 
+                                   value="{{ settings.terms_of_service_url or '' }}" 
+                                   placeholder="/terms">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Privacy Policy URL</label>
+                            <input type="text" name="privacy_policy_url" class="form-control" 
+                                   value="{{ settings.privacy_policy_url or '' }}" 
+                                   placeholder="/privacy">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Refund Policy URL</label>
+                            <input type="text" name="refund_policy_url" class="form-control" 
+                                   value="{{ settings.refund_policy_url or '' }}" 
+                                   placeholder="/refund">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Cookie Policy URL</label>
+                            <input type="text" name="cookie_policy_url" class="form-control" 
+                                   value="{{ settings.cookie_policy_url or '' }}" 
+                                   placeholder="/cookies">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Quick Links -->
+            <div class="col-lg-6 mb-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-warning text-dark border-0">
+                        <h6 class="mb-0 fw-bold">
+                            <i class="fas fa-link me-1"></i>Quick Links
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">How It Works URL</label>
+                            <input type="text" name="how_it_works_url" class="form-control" 
+                                   value="{{ settings.how_it_works_url or '' }}" 
+                                   placeholder="/how-it-works">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Pricing URL</label>
+                            <input type="text" name="pricing_url" class="form-control" 
+                                   value="{{ settings.pricing_url or '' }}" 
+                                   placeholder="/pricing">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Social Media Links -->
+            <div class="col-lg-6 mb-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-primary text-white border-0">
+                        <h6 class="mb-0 fw-bold">
+                            <i class="fas fa-share-alt me-1"></i>Social Media Links
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Facebook URL</label>
+                            <input type="text" name="facebook_url" class="form-control" 
+                                   value="{{ settings.facebook_url or '' }}" 
+                                   placeholder="https://facebook.com/yourpage">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Twitter URL</label>
+                            <input type="text" name="twitter_url" class="form-control" 
+                                   value="{{ settings.twitter_url or '' }}" 
+                                   placeholder="https://twitter.com/yourhandle">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Instagram URL</label>
+                            <input type="text" name="instagram_url" class="form-control" 
+                                   value="{{ settings.instagram_url or '' }}" 
+                                   placeholder="https://instagram.com/yourhandle">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Telegram URL</label>
+                            <input type="text" name="telegram_url" class="form-control" 
+                                   value="{{ settings.telegram_url or '' }}" 
+                                   placeholder="https://t.me/yourchannel">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">WhatsApp URL</label>
+                            <input type="text" name="whatsapp_url" class="form-control" 
+                                   value="{{ settings.whatsapp_url or '' }}" 
+                                   placeholder="https://wa.me/your_number">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-save me-1"></i>Save All Links
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
