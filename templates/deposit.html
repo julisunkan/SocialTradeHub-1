@@ -24,7 +24,7 @@
                                 <p class="mb-0"><strong>Account Name:</strong> {{ settings.account_name }}</p>
                             </div>
                         </div>
-                        
+
                         {% if settings.bank_name_2 %}
                         <div class="col-md-6">
                             <div class="alert alert-success mb-3">
@@ -95,6 +95,20 @@
                                 <small class="text-muted">Enter the exact amount you transferred</small>
                             </div>
 
+                            <div class="col-md-6 mb-3">
+                                {{ form.deposit_method.label(class="form-label") }}
+                                {{ form.deposit_method(class="form-control") }}
+                                {% if form.deposit_method.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.deposit_method.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
                             <div class="col-md-6 mb-3">
                                 {{ form.reference_number.label(class="form-label") }}
                                 {{ form.reference_number(class="form-control", placeholder="e.g., TXN123456789") }}
