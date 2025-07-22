@@ -1,0 +1,153 @@
+
+{% extends "base.html" %}
+
+{% block title %}{{ 'Edit Page' if page else 'Create Page' }} - Admin{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-0">{{ 'Edit Page' if page else 'Create New Page' }}</h1>
+                    <p class="text-muted">{{ 'Update page content and settings' if page else 'Create a new page for your website' }}</p>
+                </div>
+                <a href="{{ url_for('admin_pages') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>Back to Pages
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light border-0">
+                    <h6 class="mb-0 fw-bold">Page Content</h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-8">
+                                {{ form.title.label(class="form-label") }}
+                                {{ form.title(class="form-control") }}
+                                {% if form.title.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.title.errors[0] }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                {{ form.slug.label(class="form-label") }}
+                                {{ form.slug(class="form-control") }}
+                                {% if form.slug.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.slug.errors[0] }}
+                                    </div>
+                                {% endif %}
+                                <small class="text-muted">URL: /{{ form.slug.data or 'your-slug' }}</small>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.content.label(class="form-label") }}
+                            {{ form.content(class="form-control", rows="15", style="font-family: 'Courier New', monospace;") }}
+                            {% if form.content.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.content.errors[0] }}
+                                </div>
+                            {% endif %}
+                            <small class="text-muted">You can use HTML tags to format your content.</small>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.meta_description.label(class="form-label") }}
+                            {{ form.meta_description(class="form-control", rows="3") }}
+                            {% if form.meta_description.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.meta_description.errors[0] }}
+                                </div>
+                            {% endif %}
+                            <small class="text-muted">Brief description for search engines (max 300 characters).</small>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-8">
+                                {{ form.seo_title.label(class="form-label") }}
+                                {{ form.seo_title(class="form-control") }}
+                                {% if form.seo_title.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.seo_title.errors[0] }}
+                                    </div>
+                                {% endif %}
+                                <small class="text-muted">Title shown in search results (optional).</small>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check mt-4 pt-2">
+                                    {{ form.is_active(class="form-check-input") }}
+                                    {{ form.is_active.label(class="form-check-label") }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            {{ form.seo_keywords.label(class="form-label") }}
+                            {{ form.seo_keywords(class="form-control", rows="2") }}
+                            {% if form.seo_keywords.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.seo_keywords.errors[0] }}
+                                </div>
+                            {% endif %}
+                            <small class="text-muted">Comma-separated keywords for SEO (optional).</small>
+                        </div>
+
+                        <div class="d-grid">
+                            {{ form.submit(class="btn btn-primary btn-lg") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light border-0">
+                    <h6 class="mb-0 fw-bold">Quick Guide</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="fw-bold">HTML Basics:</h6>
+                        <ul class="small text-muted">
+                            <li><code>&lt;h1&gt;Heading&lt;/h1&gt;</code> - Main heading</li>
+                            <li><code>&lt;h2&gt;Subheading&lt;/h2&gt;</code> - Subheading</li>
+                            <li><code>&lt;p&gt;Paragraph&lt;/p&gt;</code> - Paragraph</li>
+                            <li><code>&lt;strong&gt;Bold&lt;/strong&gt;</code> - Bold text</li>
+                            <li><code>&lt;em&gt;Italic&lt;/em&gt;</code> - Italic text</li>
+                            <li><code>&lt;br&gt;</code> - Line break</li>
+                            <li><code>&lt;a href="url"&gt;Link&lt;/a&gt;</code> - Link</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="fw-bold">Lists:</h6>
+                        <ul class="small text-muted">
+                            <li><code>&lt;ul&gt;&lt;li&gt;Item&lt;/li&gt;&lt;/ul&gt;</code> - Bullet list</li>
+                            <li><code>&lt;ol&gt;&lt;li&gt;Item&lt;/li&gt;&lt;/ol&gt;</code> - Numbered list</li>
+                        </ul>
+                    </div>
+
+                    {% if page and page.is_active %}
+                    <div class="mt-4">
+                        <a href="/{{ page.slug }}" class="btn btn-outline-success btn-sm w-100" target="_blank">
+                            <i class="fas fa-external-link-alt me-1"></i>View Live Page
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

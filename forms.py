@@ -286,6 +286,34 @@ class SMTPTestForm(FlaskForm):
     ])
     submit = SubmitField('Test SMTP Connection')
 
+class PageForm(FlaskForm):
+    title = StringField('Page Title', validators=[
+        DataRequired(), 
+        Length(max=200)
+    ])
+    slug = StringField('Page URL Slug', validators=[
+        DataRequired(), 
+        Length(max=100)
+    ])
+    content = TextAreaField('Page Content', validators=[
+        DataRequired(),
+        Length(min=10)
+    ])
+    meta_description = TextAreaField('Meta Description', validators=[
+        Optional(), 
+        Length(max=300)
+    ])
+    seo_title = StringField('SEO Title', validators=[
+        Optional(), 
+        Length(max=200)
+    ])
+    seo_keywords = TextAreaField('SEO Keywords', validators=[
+        Optional(), 
+        Length(max=500)
+    ])
+    is_active = BooleanField('Active Page')
+    submit = SubmitField('Save Page')
+
 class SearchForm(FlaskForm):
     platform = SelectField('Platform', choices=[
         ('', 'All Platforms'),

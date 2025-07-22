@@ -256,6 +256,30 @@ class Notification(db.Model):
     # Relationships
     user = db.relationship('User', backref='notifications')
 
+class Page(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # Page details
+    slug = db.Column(db.String(100), unique=True, nullable=False)
+    title = db.Column(db.String(200), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    meta_description = db.Column(db.Text)
+    
+    # Status
+    is_active = db.Column(db.Boolean, default=True)
+    
+    # SEO
+    seo_title = db.Column(db.String(200))
+    seo_keywords = db.Column(db.Text)
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_by = db.Column(db.Integer, db.ForeignKey('user.id'))
+    
+    # Relationships
+    editor = db.relationship('User', backref='edited_pages')
+
 class ActivityLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))

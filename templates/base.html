@@ -4,22 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}SocialMarket - Buy & Sell Social Media Accounts{% endblock %}</title>
-    
+
     <!-- PWA Meta Tags -->
     <meta name="description" content="{% block description %}Buy and sell verified social media accounts with secure transactions in Nigerian Naira{% endblock %}">
     <meta name="theme-color" content="#3b82f6">
     <link rel="manifest" href="{{ url_for('manifest') }}">
-    
+
     <!-- Icons -->
     <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
-    
+
     <!-- CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
-    
+
     {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -29,11 +29,11 @@
             <a class="navbar-brand fw-bold" href="{{ url_for('index') }}">
                 <i class="fas fa-share-alt me-2"></i>SocialMarket
             </a>
-            
+
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            
+
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
@@ -49,7 +49,7 @@
                     </li>
                     {% endif %}
                 </ul>
-                
+
                 <ul class="navbar-nav">
                     {% if current_user.is_authenticated %}
                     <li class="nav-item dropdown">
@@ -65,7 +65,7 @@
                             </a></li>
                         </ul>
                     </li>
-                    
+
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-user-circle me-1"></i>{{ current_user.username }}
@@ -168,10 +168,10 @@
                 <div class="col-lg-2 mb-4">
                     <h6 class="text-info mb-3">Support</h6>
                     <ul class="list-unstyled footer-links">
-                        <li><a href="{% if settings and settings.help_center_url %}{{ settings.help_center_url }}{% else %}#{% endif %}" class="footer-link">
+                        <li><a href="{% if settings and settings.help_center_url %}{{ url_for('page', slug='help') if settings else '#' }}{% else %}{{ url_for('page', slug='help') }}{% endif %}" class="footer-link">
                             <i class="fas fa-life-ring me-1"></i>Help Center
                         </a></li>
-                        <li><a href="{% if settings and settings.contact_us_url %}{{ settings.contact_us_url }}{% else %}#{% endif %}" class="footer-link">
+                        <li><a href="{% if settings and settings.contact_us_url %}{{ url_for('page', slug='contact') if settings else '#' }}{% else %}{{ url_for('page', slug='contact') }}{% endif %}" class="footer-link">
                             <i class="fas fa-envelope me-1"></i>Contact Us
                         </a></li>
                         <li><a href="{% if settings and settings.safety_tips_url %}{{ settings.safety_tips_url }}{% else %}#{% endif %}" class="footer-link">
@@ -259,7 +259,7 @@
     <!-- JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
-    
+
     {% block extra_js %}{% endblock %}
 
     <!-- PWA Installation -->
