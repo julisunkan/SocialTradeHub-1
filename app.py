@@ -46,8 +46,10 @@ app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
 app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
 app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER')
 
-# Initialize SQLAlchemy and other extensions
-db = SQLAlchemy(app)
+# Import db from models and initialize with app
+from models import db
+db.init_app(app)
+
 migrate = Migrate(app, db)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
@@ -67,10 +69,6 @@ os.makedirs('uploads/payment_proofs', exist_ok=True)
 os.makedirs('uploads/account_screenshots', exist_ok=True)
 os.makedirs('uploads/profile_pics', exist_ok=True)
 os.makedirs('static/manifest', exist_ok=True)
-
-# Initialize db in models module
-import models
-models.db = db
 
 # Import models from models.py
 from models import User, SocialAccount, Purchase, WalletDeposit, Settings, Notification, Referral, Invoice

@@ -5,7 +5,8 @@ from datetime import datetime
 from decimal import Decimal
 import uuid
 
-db = None
+# Create db instance that will be initialized later
+db = SQLAlchemy()
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
