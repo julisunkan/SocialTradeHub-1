@@ -109,26 +109,14 @@ class SocialAccountForm(FlaskForm):
     submit = SubmitField('List Account')
 
 class WalletDepositForm(FlaskForm):
-    amount = DecimalField('Amount (₦)', validators=[
-        DataRequired(), 
-        NumberRange(min=100, max=1000000)
-    ], places=2)
+    amount = DecimalField('Amount (₦)', validators=[DataRequired(), NumberRange(min=100, max=1000000)], places=2)
     deposit_method = SelectField('Deposit Method', choices=[
         ('bank_transfer', 'Bank Transfer'),
         ('cash_deposit', 'Cash Deposit')
     ], validators=[DataRequired()])
-    bank_name = StringField('Bank Name', validators=[
-        DataRequired(), 
-        Length(max=100)
-    ])
-    account_number = StringField('Account Number', validators=[
-        DataRequired(), 
-        Length(max=20)
-    ])
-    account_name = StringField('Account Name', validators=[
-        DataRequired(), 
-        Length(max=100)
-    ])
+    bank_name = StringField('Bank Name', validators=[Optional()])
+    account_number = StringField('Account Number', validators=[Optional()])
+    account_name = StringField('Account Name', validators=[Optional()])
     reference_number = StringField('Transaction Reference', validators=[
         DataRequired(), 
         Length(max=100)
@@ -237,13 +225,13 @@ class SettingsForm(FlaskForm):
         DataRequired(), 
         Email()
     ])
-    
+
     # Payment instructions
     payment_instructions = TextAreaField('Payment Instructions', validators=[
         Optional(), 
         Length(max=1000)
     ])
-    
+
     # Social media
     facebook_url = StringField('Facebook URL')
     twitter_url = StringField('Twitter URL')

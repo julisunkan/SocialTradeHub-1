@@ -43,7 +43,8 @@ class User(UserMixin, db.Model):
     accounts_for_sale = db.relationship('SocialAccount', foreign_keys='SocialAccount.seller_id', backref='seller', lazy=True)
     accounts_reviewed = db.relationship('SocialAccount', foreign_keys='SocialAccount.reviewed_by', backref='reviewer', lazy=True)
     purchases = db.relationship('Purchase', backref='buyer', lazy=True)
-    deposits = db.relationship('WalletDeposit', backref='user', lazy=True)
+    deposits = db.relationship('WalletDeposit', foreign_keys='WalletDeposit.user_id', backref='user', lazy=True)
+    processed_deposits = db.relationship('WalletDeposit', foreign_keys='WalletDeposit.processed_by', backref='processor', lazy=True)
     referrals = db.relationship('User', backref=db.backref('referrer', remote_side=[id]))
 
     def __init__(self, **kwargs):

@@ -20,6 +20,15 @@ import json
 from functools import wraps
 from PIL import Image
 import os
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or current_user.role != 'admin':
+            flash('Access denied. Admin privileges required.', 'error')
+            return redirect(url_for('index'))
+        return f(*args, **kwargs)
+    return decorated_function
 from forms import (
     RegistrationForm, LoginForm, SocialAccountForm,
     WalletDepositForm, PurchaseForm, AdminAccountReviewForm,
@@ -77,190 +86,13 @@ from models import User, SocialAccount, Purchase, WalletDeposit, Settings, Notif
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-def admin_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if not current_user.is_authenticated or current_user.role != 'admin':
-            flash('Access denied. Admin privileges required.', 'error')
-            return redirect(url_for('index'))
-        return f(*args, **kwargs)
-    return decorated_function
+@app.context_processor
+def inject_settings():
+    """Make settings available in all templates"""
+    settings = Settings.query.first()
+    return dict(settings=settings)
 
-# Forms
-class RegistrationForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired(), Length(min=4, max=20)])
-    email = EmailField('Email', validators=[DataRequired(), Email()])
-    password = PasswordField('Password', validators=[DataRequired(), Length(min=6)])
-    confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
-    referral_code = StringField('Referral Code (Optional)', validators=[Optional()])
-    submit = SubmitField('Register')
-
-    def validate_username(self, username):
-        user = User.query.filter_by(username=username.data).first()
-        if user:
-            raise ValidationError('Username already taken. Please choose a different one.')
-
-    def validate_email(self, email):
-        user = User.query.filter_by(email=email.data).first()
-        if user:
-            raise ValidationError('Email already registered. Please use a different email.')
-
-class LoginForm(FlaskForm):
-    email = EmailField('Email', validators=[DataRequired(), Email()])
-    password = PasswordField('Password', validators=[DataRequired()])
-    remember_me = BooleanField('Remember Me')
-    submit = SubmitField('Login')
-
-class SocialAccountForm(FlaskForm):
-    platform = SelectField('Platform', choices=[
-        ('instagram', 'Instagram'),
-        ('facebook', 'Facebook'),
-        ('twitter', 'Twitter/X'),
-        ('tiktok', 'TikTok'),
-        ('youtube', 'YouTube'),
-        ('linkedin', 'LinkedIn'),
-        ('snapchat', 'Snapchat'),
-        ('pinterest', 'Pinterest'),
-        ('discord', 'Discord'),
-        ('telegram', 'Telegram'),
-        ('whatsapp_business', 'WhatsApp Business')
-    ], validators=[DataRequired()])
-
-    username = StringField('Account Username', validators=[
-        DataRequired(), 
-        Length(min=1, max=100)
-    ])
-    followers_count = IntegerField('Followers Count', validators=[
-        DataRequired(), 
-        NumberRange(min=0)
-    ])
-    engagement_rate = DecimalField('Engagement Rate (%)', validators=[
-        Optional(), 
-        NumberRange(min=0, max=100)
-    ], places=2)
-    account_age = StringField('Account Age', validators=[
-        DataRequired(), 
-        Length(max=50)
-    ])
-    niche = StringField('Niche/Category', validators=[
-        DataRequired(), 
-        Length(max=100)
-    ])
-    price = DecimalField('Price (₦)', validators=[
-        DataRequired(), 
-        NumberRange(min=1)
-    ], places=2)
-    description = TextAreaField('Description', validators=[
-        DataRequired(), 
-        Length(min=10, max=1000)
-    ])
-    screenshots = FileField('Account Screenshots', validators=[
-        FileRequired(),
-        FileAllowed(['jpg', 'png', 'gif'], 'Images only!')
-    ])
-    login_email = StringField('Login Email', validators=[
-        DataRequired(), 
-        Email()
-    ])
-    login_password = StringField('Login Password', validators=[
-        DataRequired()
-    ])
-    additional_info = TextAreaField('Additional Information', validators=[
-        Optional(), 
-        Length(max=500)
-    ])
-    submit = SubmitField('List Account')
-
-class WalletDepositForm(FlaskForm):
-    amount = DecimalField('Amount (₦)', validators=[DataRequired(), NumberRange(min=100)], places=2)
-    reference_number = StringField('Transaction Reference/ID', validators=[DataRequired()])
-    payment_proof = FileField('Payment Receipt/Screenshot', validators=[
-        FileRequired(),
-        FileAllowed(['jpg', 'png', 'pdf'], 'Images and PDF only!')
-    ])
-    submit = SubmitField('Submit Deposit Request')
-
-class AdminAccountReviewForm(FlaskForm):
-    status = SelectField('Status', choices=[
-        ('pending', 'Pending'),
-        ('approved', 'Approved'),
-        ('rejected', 'Rejected')
-    ], validators=[DataRequired()])
-    admin_notes = TextAreaField('Admin Notes', validators=[Optional()])
-    is_featured = BooleanField('Featured Account')
-    submit = SubmitField('Update Account')
-
-class AdminDepositReviewForm(FlaskForm):
-    status = SelectField('Status', choices=[
-        ('pending', 'Pending'),
-        ('confirmed', 'Confirmed'),
-        ('rejected', 'Rejected')
-    ], validators=[DataRequired()])
-    admin_notes = TextAreaField('Admin Notes', validators=[Optional()])
-    submit = SubmitField('Update Deposit')
-
-class AdminPurchaseReviewForm(FlaskForm):
-    status = SelectField('Status', choices=[
-        ('pending', 'Pending'),
-        ('confirmed', 'Confirmed'),
-        ('completed', 'Completed'),
-        ('cancelled', 'Cancelled')
-    ], validators=[DataRequired()])
-    account_delivered = BooleanField('Account Delivered')
-    submit = SubmitField('Update Purchase')
-
-class AdminUserManagementForm(FlaskForm):
-    is_verified = BooleanField('Verified')
-    is_active = BooleanField('Active')
-    is_banned = BooleanField('Banned')
-    role = SelectField('Role', choices=[
-        ('user', 'User'),
-        ('admin', 'Admin')
-    ], validators=[DataRequired()])
-    submit = SubmitField('Update User')
-
-class PurchaseForm(FlaskForm):
-    payment_method = SelectField('Payment Method', choices=[
-        ('wallet', 'Wallet Balance'),
-        ('bank_transfer', 'Bank Transfer')
-    ], validators=[DataRequired()])
-    payment_reference = StringField('Payment Reference', validators=[Optional()])
-    payment_proof = FileField('Payment Proof', validators=[
-        Optional(),
-        FileAllowed(['jpg', 'png', 'pdf'], 'Images and PDF only!')
-    ])
-    submit = SubmitField('Complete Purchase')
-
-class SearchForm(FlaskForm):
-    platform = SelectField('Platform', choices=[], validators=[Optional()])
-    min_price = DecimalField('Min Price', validators=[Optional(), NumberRange(min=0)])
-    max_price = DecimalField('Max Price', validators=[Optional(), NumberRange(min=0)])
-    min_followers = IntegerField('Min Followers', validators=[Optional(), NumberRange(min=0)])
-    niche = StringField('Niche', validators=[Optional()])
-    submit = SubmitField('Search')
-
-class SettingsForm(FlaskForm):
-    site_name = StringField('Site Name', validators=[DataRequired()])
-    commission_rate = DecimalField('Commission Rate (%)', validators=[DataRequired(), NumberRange(min=0, max=100)], places=2)
-    referral_commission = DecimalField('Referral Commission (%)', validators=[DataRequired(), NumberRange(min=0, max=100)], places=2)
-    min_withdrawal = DecimalField('Min Withdrawal', validators=[DataRequired(), NumberRange(min=0)], places=2)
-    max_withdrawal = DecimalField('Max Withdrawal', validators=[DataRequired(), NumberRange(min=0)], places=2)
-
-    # Primary Bank Account Details
-    bank_name = StringField('Bank Name', validators=[Optional()])
-    account_number = StringField('Account Number', validators=[Optional()])
-    account_name = StringField('Account Name', validators=[Optional()])
-
-    # Alternative Bank Account Details
-    bank_name_2 = StringField('Alternative Bank Name', validators=[Optional()])
-    account_number_2 = StringField('Alternative Account Number', validators=[Optional()])
-    account_name_2 = StringField('Alternative Account Name', validators=[Optional()])
-
-    # Payment Instructions
-    payment_instructions = TextAreaField('Payment Instructions', validators=[Optional()])
-
-    admin_email = EmailField('Admin Email', validators=[Optional(), Email()])
-    submit = SubmitField('Save Settings')
+# Import forms from forms.py - forms are already imported at the top
 
 # Utility functions
 def allowed_file(filename, allowed_extensions):
@@ -821,7 +653,7 @@ def purchase_account(id):
 
     if account.seller_id == current_user.id:
         flash('You cannot purchase your own account.', 'error')
-        return redirect(url_for('account_detail', account_id=id))
+        return redirect(url_for('account_detail', id=id))
 
     form = PurchaseForm()
     settings = Settings.query.first()
