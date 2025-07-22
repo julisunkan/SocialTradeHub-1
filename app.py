@@ -336,9 +336,9 @@ def browse():
                              'order': order
                          })
 
-@app.route('/account/<int:account_id>')
-def account_detail(account_id):
-    account = SocialAccount.query.get_or_404(account_id)
+@app.route('/account/<int:id>')
+def account_detail(id):
+    account = SocialAccount.query.get_or_404(id)
 
     if account.status != 'approved':
         flash('Account not available.', 'error')
@@ -348,7 +348,7 @@ def account_detail(account_id):
     similar_accounts = SocialAccount.query.filter(
         SocialAccount.platform == account.platform,
         SocialAccount.status == 'approved',
-        SocialAccount.id != account.id
+        SocialAccount.id != id
     ).limit(4).all()
 
     return render_template('account_detail.html', account=account, similar_accounts=similar_accounts)
