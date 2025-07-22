@@ -1,0 +1,158 @@
+
+{% extends "base.html" %}
+
+{% block title %}Admin Settings - SocialMarket{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-0">Admin Settings</h1>
+                    <p class="text-muted">Manage site settings and payment details</p>
+                </div>
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        
+        <div class="row">
+            <!-- Site Settings -->
+            <div class="col-lg-6 mb-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-light border-0">
+                        <h6 class="mb-0 fw-bold">
+                            <i class="fas fa-globe me-1"></i>Site Settings
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            {{ form.site_name.label(class="form-label") }}
+                            {{ form.site_name(class="form-control") }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.admin_email.label(class="form-label") }}
+                            {{ form.admin_email(class="form-control") }}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.commission_rate.label(class="form-label") }}
+                                <div class="input-group">
+                                    {{ form.commission_rate(class="form-control") }}
+                                    <span class="input-group-text">%</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.referral_commission.label(class="form-label") }}
+                                <div class="input-group">
+                                    {{ form.referral_commission(class="form-control") }}
+                                    <span class="input-group-text">%</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.min_withdrawal.label(class="form-label") }}
+                                <div class="input-group">
+                                    <span class="input-group-text">₦</span>
+                                    {{ form.min_withdrawal(class="form-control") }}
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.max_withdrawal.label(class="form-label") }}
+                                <div class="input-group">
+                                    <span class="input-group-text">₦</span>
+                                    {{ form.max_withdrawal(class="form-control") }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bank Details -->
+            <div class="col-lg-6 mb-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-light border-0">
+                        <h6 class="mb-0 fw-bold">
+                            <i class="fas fa-university me-1"></i>Bank Account Details
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <h6 class="text-primary mb-3">Primary Account</h6>
+                        <div class="mb-3">
+                            {{ form.bank_name.label(class="form-label") }}
+                            {{ form.bank_name(class="form-control", placeholder="e.g., First Bank Nigeria") }}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.account_number.label(class="form-label") }}
+                                {{ form.account_number(class="form-control", placeholder="0123456789") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.account_name.label(class="form-label") }}
+                                {{ form.account_name(class="form-control", placeholder="SocialMarket Ltd") }}
+                            </div>
+                        </div>
+                        
+                        <hr class="my-3">
+                        
+                        <h6 class="text-success mb-3">Alternative Account (Optional)</h6>
+                        <div class="mb-3">
+                            {{ form.bank_name_2.label(class="form-label") }}
+                            {{ form.bank_name_2(class="form-control", placeholder="e.g., Access Bank") }}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.account_number_2.label(class="form-label") }}
+                                {{ form.account_number_2(class="form-control", placeholder="9876543210") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.account_name_2.label(class="form-label") }}
+                                {{ form.account_name_2(class="form-control", placeholder="SocialMarket Ltd") }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Instructions -->
+        <div class="row">
+            <div class="col-12 mb-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-light border-0">
+                        <h6 class="mb-0 fw-bold">
+                            <i class="fas fa-info-circle me-1"></i>Payment Instructions
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        {{ form.payment_instructions.label(class="form-label") }}
+                        {{ form.payment_instructions(class="form-control", rows="4", placeholder="Enter additional instructions for users making deposits...") }}
+                        <small class="text-muted">These instructions will be shown to users on the deposit page</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="d-grid">
+                    {{ form.submit(class="btn btn-primary btn-lg") }}
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

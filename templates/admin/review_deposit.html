@@ -34,22 +34,16 @@
                             <strong>Amount:</strong> ₦{{ "%.2f"|format(deposit.amount) }}
                         </div>
                         <div class="col-md-6 mb-3">
-                            <strong>Method:</strong> {{ deposit.deposit_method.replace('_', ' ').title() }}
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <strong>Bank:</strong> {{ deposit.bank_name }}
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <strong>Account Number:</strong> {{ deposit.account_number }}
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <strong>Account Name:</strong> {{ deposit.account_name }}
-                        </div>
-                        <div class="col-md-6 mb-3">
                             <strong>Reference:</strong> {{ deposit.reference_number }}
                         </div>
                         <div class="col-md-6 mb-3">
                             <strong>Date:</strong> {{ deposit.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Status:</strong> 
+                            <span class="badge bg-{{ 'success' if deposit.status == 'confirmed' else 'warning' if deposit.status == 'pending' else 'danger' }}">
+                                {{ deposit.status.title() }}
+                            </span>
                         </div>
                     </div>
                     

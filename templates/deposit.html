@@ -6,11 +6,72 @@
 {% block content %}
 <div class="container py-4">
     <div class="row justify-content-center">
-        <div class="col-lg-8">
+        <div class="col-lg-10">
+            <!-- Bank Details Section -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-university me-2"></i>Bank Account Details
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% if settings and settings.bank_name %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="alert alert-info mb-3">
+                                <h6 class="fw-bold mb-2">Primary Account</h6>
+                                <p class="mb-1"><strong>Bank Name:</strong> {{ settings.bank_name }}</p>
+                                <p class="mb-1"><strong>Account Number:</strong> {{ settings.account_number }}</p>
+                                <p class="mb-0"><strong>Account Name:</strong> {{ settings.account_name }}</p>
+                            </div>
+                        </div>
+                        {% if settings.bank_name_2 %}
+                        <div class="col-md-6">
+                            <div class="alert alert-success mb-3">
+                                <h6 class="fw-bold mb-2">Alternative Account</h6>
+                                <p class="mb-1"><strong>Bank Name:</strong> {{ settings.bank_name_2 }}</p>
+                                <p class="mb-1"><strong>Account Number:</strong> {{ settings.account_number_2 }}</p>
+                                <p class="mb-0"><strong>Account Name:</strong> {{ settings.account_name_2 }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    {% if settings.payment_instructions %}
+                    <div class="alert alert-warning">
+                        <h6 class="fw-bold mb-2">
+                            <i class="fas fa-info-circle me-1"></i>Payment Instructions
+                        </h6>
+                        <p class="mb-0">{{ settings.payment_instructions|nl2br }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="alert alert-light border">
+                        <h6 class="fw-bold mb-2">
+                            <i class="fas fa-clipboard-list me-1"></i>How to Make a Deposit
+                        </h6>
+                        <ol class="mb-0">
+                            <li>Transfer money to any of the bank accounts above</li>
+                            <li>Take a screenshot or save the receipt</li>
+                            <li>Fill the form below with the amount and transaction reference</li>
+                            <li>Upload your payment proof</li>
+                            <li>Wait for admin verification (usually within 24 hours)</li>
+                        </ol>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Bank details not configured. Please contact administrator.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Deposit Form -->
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white">
                     <h4 class="card-title mb-0">
-                        <i class="fas fa-plus-circle me-2"></i>Make Deposit
+                        <i class="fas fa-plus-circle me-2"></i>Submit Deposit Request
                     </h4>
                 </div>
                 <div class="card-body">
@@ -20,7 +81,10 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 {{ form.amount.label(class="form-label") }}
-                                {{ form.amount(class="form-control") }}
+                                <div class="input-group">
+                                    <span class="input-group-text">₦</span>
+                                    {{ form.amount(class="form-control", placeholder="Enter amount paid") }}
+                                </div>
                                 {% if form.amount.errors %}
                                     <div class="text-danger">
                                         {% for error in form.amount.errors %}
@@ -28,69 +92,21 @@
                                         {% endfor %}
                                     </div>
                                 {% endif %}
+                                <small class="text-muted">Enter the exact amount you transferred</small>
                             </div>
                             
                             <div class="col-md-6 mb-3">
-                                {{ form.deposit_method.label(class="form-label") }}
-                                {{ form.deposit_method(class="form-select") }}
-                                {% if form.deposit_method.errors %}
+                                {{ form.reference_number.label(class="form-label") }}
+                                {{ form.reference_number(class="form-control", placeholder="e.g., TXN123456789") }}
+                                {% if form.reference_number.errors %}
                                     <div class="text-danger">
-                                        {% for error in form.deposit_method.errors %}
+                                        {% for error in form.reference_number.errors %}
                                             <small>{{ error }}</small>
                                         {% endfor %}
                                     </div>
                                 {% endif %}
+                                <small class="text-muted">Transaction ID from your bank or payment app</small>
                             </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                {{ form.bank_name.label(class="form-label") }}
-                                {{ form.bank_name(class="form-control") }}
-                                {% if form.bank_name.errors %}
-                                    <div class="text-danger">
-                                        {% for error in form.bank_name.errors %}
-                                            <small>{{ error }}</small>
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
-                            </div>
-                            
-                            <div class="col-md-6 mb-3">
-                                {{ form.account_number.label(class="form-label") }}
-                                {{ form.account_number(class="form-control") }}
-                                {% if form.account_number.errors %}
-                                    <div class="text-danger">
-                                        {% for error in form.account_number.errors %}
-                                            <small>{{ error }}</small>
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            {{ form.account_name.label(class="form-label") }}
-                            {{ form.account_name(class="form-control") }}
-                            {% if form.account_name.errors %}
-                                <div class="text-danger">
-                                    {% for error in form.account_name.errors %}
-                                        <small>{{ error }}</small>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="mb-3">
-                            {{ form.reference_number.label(class="form-label") }}
-                            {{ form.reference_number(class="form-control") }}
-                            {% if form.reference_number.errors %}
-                                <div class="text-danger">
-                                    {% for error in form.reference_number.errors %}
-                                        <small>{{ error }}</small>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
                         </div>
                         
                         <div class="mb-3">
@@ -103,7 +119,7 @@
                                     {% endfor %}
                                 </div>
                             {% endif %}
-                            <small class="text-muted">Upload payment receipt or screenshot</small>
+                            <small class="text-muted">Upload screenshot of payment confirmation or bank receipt (JPG, PNG, PDF)</small>
                         </div>
                         
                         <div class="d-grid">

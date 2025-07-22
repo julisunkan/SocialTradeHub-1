@@ -58,7 +58,6 @@
                         <tr>
                             <th>Date</th>
                             <th>Amount</th>
-                            <th>Method</th>
                             <th>Status</th>
                             <th>Reference</th>
                         </tr>
@@ -68,7 +67,6 @@
                         <tr>
                             <td>{{ deposit.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
                             <td>₦{{ "%.2f"|format(deposit.amount) }}</td>
-                            <td>{{ deposit.deposit_method.replace('_', ' ').title() }}</td>
                             <td>
                                 {% if deposit.status == 'confirmed' %}
                                     <span class="badge bg-success">Confirmed</span>

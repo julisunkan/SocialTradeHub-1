@@ -178,10 +178,6 @@ class WalletDeposit(db.Model):
     
     # Deposit details
     amount = db.Column(db.Numeric(10, 2), nullable=False)
-    deposit_method = db.Column(db.String(50))  # bank_transfer, cash_deposit
-    bank_name = db.Column(db.String(100))
-    account_number = db.Column(db.String(20))
-    account_name = db.Column(db.String(100))
     
     # Payment proof
     payment_proof = db.Column(db.String(255))
@@ -227,6 +223,14 @@ class Settings(db.Model):
     bank_name = db.Column(db.String(100))
     account_number = db.Column(db.String(20))
     account_name = db.Column(db.String(100))
+    
+    # Secondary bank details
+    bank_name_2 = db.Column(db.String(100))
+    account_number_2 = db.Column(db.String(20))
+    account_name_2 = db.Column(db.String(100))
+    
+    # Payment instructions
+    payment_instructions = db.Column(db.Text)
     
     # Social media links
     facebook_url = db.Column(db.String(255))
@@ -361,19 +365,12 @@ class SocialAccountForm(FlaskForm):
 
 class WalletDepositForm(FlaskForm):
     amount = DecimalField('Amount (₦)', validators=[DataRequired(), NumberRange(min=100)], places=2)
-    deposit_method = SelectField('Deposit Method', choices=[
-        ('bank_transfer', 'Bank Transfer'),
-        ('cash_deposit', 'Cash Deposit')
-    ], validators=[DataRequired()])
-    bank_name = StringField('Bank Name', validators=[DataRequired()])
-    account_number = StringField('Account Number', validators=[DataRequired()])
-    account_name = StringField('Account Name', validators=[DataRequired()])
-    reference_number = StringField('Reference Number', validators=[DataRequired()])
-    payment_proof = FileField('Payment Proof', validators=[
+    reference_number = StringField('Transaction Reference/ID', validators=[DataRequired()])
+    payment_proof = FileField('Payment Receipt/Screenshot', validators=[
         FileRequired(),
         FileAllowed(['jpg', 'png', 'pdf'], 'Images and PDF only!')
     ])
-    submit = SubmitField('Submit Deposit')
+    submit = SubmitField('Submit Deposit Request')
 
 class AdminAccountReviewForm(FlaskForm):
     status = SelectField('Status', choices=[
@@ -440,9 +437,20 @@ class SettingsForm(FlaskForm):
     referral_commission = DecimalField('Referral Commission (%)', validators=[DataRequired(), NumberRange(min=0, max=100)], places=2)
     min_withdrawal = DecimalField('Min Withdrawal', validators=[DataRequired(), NumberRange(min=0)], places=2)
     max_withdrawal = DecimalField('Max Withdrawal', validators=[DataRequired(), NumberRange(min=0)], places=2)
+    
+    # Primary Bank Account
     bank_name = StringField('Bank Name', validators=[Optional()])
     account_number = StringField('Account Number', validators=[Optional()])
     account_name = StringField('Account Name', validators=[Optional()])
+    
+    # Secondary Bank Account
+    bank_name_2 = StringField('Bank Name 2 (Optional)', validators=[Optional()])
+    account_number_2 = StringField('Account Number 2', validators=[Optional()])
+    account_name_2 = StringField('Account Name 2', validators=[Optional()])
+    
+    # Payment Instructions
+    payment_instructions = TextAreaField('Payment Instructions', validators=[Optional()])
+    
     admin_email = EmailField('Admin Email', validators=[Optional(), Email()])
     submit = SubmitField('Save Settings')
 
@@ -746,10 +754,6 @@ def deposit():
         deposit = WalletDeposit(
             user_id=current_user.id,
             amount=form.amount.data,
-            deposit_method=form.deposit_method.data,
-            bank_name=form.bank_name.data,
-            account_number=form.account_number.data,
-            account_name=form.account_name.data,
             reference_number=form.reference_number.data,
             payment_proof=payment_proof_filename
         )
@@ -1109,6 +1113,13 @@ def manifest():
 @app.route('/sw.js')
 def service_worker():
     return send_from_directory('static', 'sw.js')
+
+# File serving
+@app.route('/uploads/<path:filename>')
+@login_required
+@admin_required
+def uploaded_file(filename):
+    return send_from_directory('uploads', filename)
 
 # Error handlers
 @app.errorhandler(404)
