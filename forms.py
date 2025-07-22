@@ -237,6 +237,13 @@ class SettingsForm(FlaskForm):
         DataRequired(), 
         Email()
     ])
+    
+    # Payment instructions
+    payment_instructions = TextAreaField('Payment Instructions', validators=[
+        Optional(), 
+        Length(max=1000)
+    ])
+    
     # Social media
     facebook_url = StringField('Facebook URL')
     twitter_url = StringField('Twitter URL')
