@@ -113,23 +113,31 @@ def save_uploaded_file(file, upload_path, max_size=(800, 600)):
             image = Image.open(file)
             image.thumbnail(max_size, Image.Resampling.LANCZOS)
 
+            # Determine the image format for saving
+            if filename.lower().endswith('.png'):
+                img_format = 'PNG'
+            elif filename.lower().endswith('.gif'):
+                img_format = 'GIF'
+            elif filename.lower().endswith('.bmp'):
+                img_format = 'BMP'
+            elif filename.lower().endswith('.webp'):
+                img_format = 'WEBP'
+            else:  # jpg, jpeg
+                img_format = 'JPEG'
+
             # Start with high quality and reduce until file is under 15KB
             quality = 95
-            temp_path = filepath + '.temp'
 
             while quality > 10:
-                image.save(temp_path, optimize=True, quality=quality)
-                if os.path.getsize(temp_path) <= 15 * 1024:  # 15KB
+                image.save(filepath, format=img_format, optimize=True, quality=quality)
+                if os.path.getsize(filepath) <= 15 * 1024:  # 15KB
                     break
                 quality -= 5
-
-            # Move temp file to final location
-            os.rename(temp_path, filepath)
 
             # If still too large, resize further
             if os.path.getsize(filepath) > 15 * 1024:
                 image.thumbnail((400, 300), Image.Resampling.LANCZOS)
-                image.save(filepath, optimize=True, quality=60)
+                image.save(filepath, format=img_format, optimize=True, quality=60)
         else:
             file.save(filepath)
 
