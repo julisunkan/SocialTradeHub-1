@@ -16,7 +16,7 @@ app = Flask(__name__)
 
 # Configuration
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'social-marketplace-secret-key-2024')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/social_marketplace.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///social_marketplace.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['WTF_CSRF_ENABLED'] = True
 app.config['UPLOAD_FOLDER'] = 'uploads'
@@ -55,8 +55,7 @@ def load_user(user_id):
 from routes import *
 
 if __name__ == '__main__':
-    # Ensure instance directory exists
-    os.makedirs('instance', exist_ok=True)
+    # Ensure upload directories exist
     os.makedirs('uploads', exist_ok=True)
     os.makedirs('uploads/account_screenshots', exist_ok=True)
     os.makedirs('uploads/payment_proofs', exist_ok=True)
