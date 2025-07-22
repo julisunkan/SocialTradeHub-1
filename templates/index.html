@@ -13,14 +13,17 @@
                     Nigeria's most trusted marketplace for social media accounts. Buy verified accounts or sell yours with secure escrow protection and instant payments in Naira.
                 </p>
                 <div class="d-flex gap-3 mb-4">
+                    {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-warning btn-lg">
+                        <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                    </a>
+                    <a href="{{ url_for('browse') }}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-search me-2"></i>Browse Accounts
+                    </a>
+                    {% else %}
                     <a href="{{ url_for('browse') }}" class="btn btn-warning btn-lg">
                         <i class="fas fa-search me-2"></i>Browse Accounts
                     </a>
-                    {% if current_user.is_authenticated %}
-                    <a href="{{ url_for('list_account') }}" class="btn btn-outline-light btn-lg">
-                        <i class="fas fa-plus me-2"></i>Sell Account
-                    </a>
-                    {% else %}
                     <a href="{{ url_for('register') }}" class="btn btn-outline-light btn-lg">
                         <i class="fas fa-user-plus me-2"></i>Start Selling
                     </a>
@@ -257,11 +260,11 @@
         <p class="lead mb-4">Join thousands of users buying and selling social media accounts</p>
         <div class="d-flex justify-content-center gap-3">
             {% if current_user.is_authenticated %}
-            <a href="{{ url_for('list_account') }}" class="btn btn-warning btn-lg">
-                <i class="fas fa-plus me-2"></i>List Your Account
-            </a>
-            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-light btn-lg">
+            <a href="{{ url_for('dashboard') }}" class="btn btn-warning btn-lg">
                 <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+            </a>
+            <a href="{{ url_for('list_account') }}" class="btn btn-outline-light btn-lg">
+                <i class="fas fa-plus me-2"></i>List Your Account
             </a>
             {% else %}
             <a href="{{ url_for('register') }}" class="btn btn-warning btn-lg">
