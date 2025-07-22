@@ -4,12 +4,6 @@
 
 {% block description %}{{ page.meta_description or page.title }}{% endblock %}
 
-{% if page.seo_keywords %}
-{% block extra_css %}
-<meta name="keywords" content="{{ page.seo_keywords }}">
-{% endblock %}
-{% endif %}
-
 {% block content %}
 <div class="page-content">
     {{ page.content|safe }}
@@ -17,6 +11,9 @@
 {% endblock %}
 
 {% block extra_css %}
+{% if page.seo_keywords %}
+<meta name="keywords" content="{{ page.seo_keywords }}">
+{% endif %}
 <style>
 .page-content {
     min-height: 70vh;

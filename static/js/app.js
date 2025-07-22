@@ -40,7 +40,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Form validation
-    const forms = document.querySelectorAll('form');
+    // Forms validation and handling
+    const forms = document.querySelectorAll('.needs-validation');
     forms.forEach(form => {
         form.addEventListener('submit', function(e) {
             const submitBtn = form.querySelector('input[type="submit"], button[type="submit"]');
