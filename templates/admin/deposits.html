@@ -1,0 +1,130 @@
+
+{% extends "base.html" %}
+
+{% block title %}Manage Deposits - Admin{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 mb-0">Manage Deposits</h1>
+            <p class="text-muted">Review and approve wallet deposits</p>
+        </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <ul class="nav nav-pills">
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if current_status == 'pending' else '' }}" 
+                       href="{{ url_for('admin_deposits', status='pending') }}">
+                        Pending ({{ deposits.total if current_status == 'pending' else 0 }})
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if current_status == 'confirmed' else '' }}" 
+                       href="{{ url_for('admin_deposits', status='confirmed') }}">
+                        Confirmed
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if current_status == 'rejected' else '' }}" 
+                       href="{{ url_for('admin_deposits', status='rejected') }}">
+                        Rejected
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Deposits List -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    {% if deposits.items %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>User</th>
+                                        <th>Amount</th>
+                                        <th>Method</th>
+                                        <th>Reference</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for deposit in deposits.items %}
+                                    <tr>
+                                        <td>{{ deposit.user.username }}</td>
+                                        <td>₦{{ "%.2f"|format(deposit.amount) }}</td>
+                                        <td>{{ deposit.deposit_method.replace('_', ' ').title() }}</td>
+                                        <td>{{ deposit.reference_number }}</td>
+                                        <td>{{ deposit.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if deposit.status == 'confirmed' else 'warning' if deposit.status == 'pending' else 'danger' }}">
+                                                {{ deposit.status.title() }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary">Review</button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        {% if deposits.pages > 1 %}
+                        <nav>
+                            <ul class="pagination justify-content-center">
+                                {% if deposits.has_prev %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('admin_deposits', page=deposits.prev_num, status=current_status) }}">Previous</a>
+                                </li>
+                                {% endif %}
+                                
+                                {% for page_num in deposits.iter_pages() %}
+                                    {% if page_num %}
+                                        {% if page_num != deposits.page %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ url_for('admin_deposits', page=page_num, status=current_status) }}">{{ page_num }}</a>
+                                        </li>
+                                        {% else %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ page_num }}</span>
+                                        </li>
+                                        {% endif %}
+                                    {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if deposits.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('admin_deposits', page=deposits.next_num, status=current_status) }}">Next</a>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-credit-card fa-3x text-muted mb-3"></i>
+                            <h4>No {{ current_status }} deposits</h4>
+                            <p class="text-muted">No deposits found with {{ current_status }} status.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

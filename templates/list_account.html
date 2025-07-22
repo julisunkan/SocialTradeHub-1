@@ -1,0 +1,159 @@
+
+{% extends "base.html" %}
+
+{% block title %}List Your Account - SocialMarket{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-plus-circle me-2"></i>
+                        List Your Social Media Account
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.platform.label(class="form-label") }}
+                                {{ form.platform(class="form-select") }}
+                                {% if form.platform.errors %}
+                                    {% for error in form.platform.errors %}
+                                        <div class="text-danger small">{{ error }}</div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.username.label(class="form-label") }}
+                                {{ form.username(class="form-control") }}
+                                {% if form.username.errors %}
+                                    {% for error in form.username.errors %}
+                                        <div class="text-danger small">{{ error }}</div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.followers_count.label(class="form-label") }}
+                                {{ form.followers_count(class="form-control") }}
+                                {% if form.followers_count.errors %}
+                                    {% for error in form.followers_count.errors %}
+                                        <div class="text-danger small">{{ error }}</div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.engagement_rate.label(class="form-label") }}
+                                {{ form.engagement_rate(class="form-control") }}
+                                {% if form.engagement_rate.errors %}
+                                    {% for error in form.engagement_rate.errors %}
+                                        <div class="text-danger small">{{ error }}</div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.account_age.label(class="form-label") }}
+                                {{ form.account_age(class="form-control", placeholder="e.g. 2 years, 6 months") }}
+                                {% if form.account_age.errors %}
+                                    {% for error in form.account_age.errors %}
+                                        <div class="text-danger small">{{ error }}</div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.niche.label(class="form-label") }}
+                                {{ form.niche(class="form-control", placeholder="e.g. Fashion, Tech, Gaming") }}
+                                {% if form.niche.errors %}
+                                    {% for error in form.niche.errors %}
+                                        <div class="text-danger small">{{ error }}</div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.price.label(class="form-label") }}
+                            {{ form.price(class="form-control") }}
+                            {% if form.price.errors %}
+                                {% for error in form.price.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.description.label(class="form-label") }}
+                            {{ form.description(class="form-control", rows="4") }}
+                            {% if form.description.errors %}
+                                {% for error in form.description.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.screenshots.label(class="form-label") }}
+                            {{ form.screenshots(class="form-control") }}
+                            <div class="form-text">Upload screenshots of your account (JPG, PNG, GIF only)</div>
+                            {% if form.screenshots.errors %}
+                                {% for error in form.screenshots.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.login_email.label(class="form-label") }}
+                                {{ form.login_email(class="form-control") }}
+                                {% if form.login_email.errors %}
+                                    {% for error in form.login_email.errors %}
+                                        <div class="text-danger small">{{ error }}</div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.login_password.label(class="form-label") }}
+                                {{ form.login_password(class="form-control", type="password") }}
+                                {% if form.login_password.errors %}
+                                    {% for error in form.login_password.errors %}
+                                        <div class="text-danger small">{{ error }}</div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.additional_info.label(class="form-label") }}
+                            {{ form.additional_info(class="form-control", rows="3") }}
+                            {% if form.additional_info.errors %}
+                                {% for error in form.additional_info.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-grid">
+                            {{ form.submit(class="btn btn-primary btn-lg") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

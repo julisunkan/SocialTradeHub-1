@@ -1,3 +1,4 @@
+
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
@@ -18,7 +19,6 @@ from decimal import Decimal
 import uuid
 import json
 from functools import wraps
-# Import forms after db initialization
 from PIL import Image
 import os
 
@@ -299,6 +299,107 @@ class LoginForm(FlaskForm):
     remember_me = BooleanField('Remember Me')
     submit = SubmitField('Login')
 
+class SocialAccountForm(FlaskForm):
+    platform = SelectField('Platform', choices=[
+        ('instagram', 'Instagram'),
+        ('facebook', 'Facebook'),
+        ('twitter', 'Twitter/X'),
+        ('tiktok', 'TikTok'),
+        ('youtube', 'YouTube'),
+        ('linkedin', 'LinkedIn'),
+        ('snapchat', 'Snapchat'),
+        ('pinterest', 'Pinterest'),
+        ('discord', 'Discord'),
+        ('telegram', 'Telegram'),
+        ('whatsapp_business', 'WhatsApp Business')
+    ], validators=[DataRequired()])
+    
+    username = StringField('Account Username', validators=[
+        DataRequired(), 
+        Length(min=1, max=100)
+    ])
+    followers_count = IntegerField('Followers Count', validators=[
+        DataRequired(), 
+        NumberRange(min=0)
+    ])
+    engagement_rate = DecimalField('Engagement Rate (%)', validators=[
+        Optional(), 
+        NumberRange(min=0, max=100)
+    ], places=2)
+    account_age = StringField('Account Age', validators=[
+        DataRequired(), 
+        Length(max=50)
+    ])
+    niche = StringField('Niche/Category', validators=[
+        DataRequired(), 
+        Length(max=100)
+    ])
+    price = DecimalField('Price (₦)', validators=[
+        DataRequired(), 
+        NumberRange(min=1)
+    ], places=2)
+    description = TextAreaField('Description', validators=[
+        DataRequired(), 
+        Length(min=10, max=1000)
+    ])
+    screenshots = FileField('Account Screenshots', validators=[
+        FileRequired(),
+        FileAllowed(['jpg', 'png', 'gif'], 'Images only!')
+    ])
+    login_email = StringField('Login Email', validators=[
+        DataRequired(), 
+        Email()
+    ])
+    login_password = StringField('Login Password', validators=[
+        DataRequired()
+    ])
+    additional_info = TextAreaField('Additional Information', validators=[
+        Optional(), 
+        Length(max=500)
+    ])
+    submit = SubmitField('List Account')
+
+class WalletDepositForm(FlaskForm):
+    amount = DecimalField('Amount (₦)', validators=[DataRequired(), NumberRange(min=100)], places=2)
+    deposit_method = SelectField('Deposit Method', choices=[
+        ('bank_transfer', 'Bank Transfer'),
+        ('cash_deposit', 'Cash Deposit')
+    ], validators=[DataRequired()])
+    bank_name = StringField('Bank Name', validators=[DataRequired()])
+    account_number = StringField('Account Number', validators=[DataRequired()])
+    account_name = StringField('Account Name', validators=[DataRequired()])
+    reference_number = StringField('Reference Number', validators=[DataRequired()])
+    payment_proof = FileField('Payment Proof', validators=[
+        FileRequired(),
+        FileAllowed(['jpg', 'png', 'pdf'], 'Images and PDF only!')
+    ])
+    submit = SubmitField('Submit Deposit')
+
+# Utility functions
+def allowed_file(filename, allowed_extensions):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in allowed_extensions
+
+def save_uploaded_file(file, upload_path, max_size=(800, 600)):
+    if file and allowed_file(file.filename, {'png', 'jpg', 'jpeg', 'gif', 'pdf'}):
+        filename = secure_filename(file.filename)
+        filename = f"{uuid.uuid4().hex}_{filename}"
+        filepath = os.path.join(upload_path, filename)
+        
+        # Create directory if it doesn't exist
+        os.makedirs(upload_path, exist_ok=True)
+        
+        if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif')):
+            # Resize image if it's too large
+            image = Image.open(file)
+            image.thumbnail(max_size, Image.Resampling.LANCZOS)
+            image.save(filepath, optimize=True, quality=85)
+        else:
+            file.save(filepath)
+        
+        return filename
+    return None
+
 # Routes
 @app.route('/')
 def index():
@@ -404,24 +505,27 @@ def dashboard():
     user_deposits = WalletDeposit.query.filter_by(user_id=current_user.id).order_by(WalletDeposit.created_at.desc()).limit(5).all()
     
     # Calculate statistics
-    total_sales = Purchase.query.filter_by(buyer_id=current_user.id, status='completed').count()
-    pending_sales = Purchase.query.filter_by(buyer_id=current_user.id, status='pending').count()
+    total_sales = Purchase.query.join(SocialAccount).filter(
+        SocialAccount.seller_id == current_user.id,
+        Purchase.status == 'completed'
+    ).count()
     
-    stats = {
-        'total_accounts': len(user_accounts),
-        'approved_accounts': len([acc for acc in user_accounts if acc.status == 'approved']),
-        'pending_accounts': len([acc for acc in user_accounts if acc.status == 'pending']),
-        'total_sales': total_sales,
-        'pending_sales': pending_sales,
+    user_stats = {
+        'accounts_listed': len(user_accounts),
+        'accounts_sold': total_sales,
+        'purchases_made': len(user_purchases),
         'wallet_balance': current_user.wallet_balance,
         'referral_earnings': current_user.referral_earnings
     }
     
+    # Recent activity
+    recent_purchases = Purchase.query.filter_by(buyer_id=current_user.id).order_by(Purchase.created_at.desc()).limit(5).all()
+    recent_listings = SocialAccount.query.filter_by(seller_id=current_user.id).order_by(SocialAccount.created_at.desc()).limit(5).all()
+    
     return render_template('dashboard/index.html', 
-                         accounts=user_accounts, 
-                         purchases=user_purchases,
-                         deposits=user_deposits,
-                         stats=stats)
+                         user_stats=user_stats,
+                         recent_purchases=recent_purchases,
+                         recent_listings=recent_listings)
 
 @app.route('/browse')
 def browse():
@@ -505,6 +609,45 @@ def account_detail(account_id):
     
     return render_template('account_detail.html', account=account, similar_accounts=similar_accounts)
 
+@app.route('/list-account', methods=['GET', 'POST'])
+@login_required
+def list_account():
+    form = SocialAccountForm()
+    
+    if form.validate_on_submit():
+        # Save screenshot
+        screenshot_filename = None
+        if form.screenshots.data:
+            screenshot_filename = save_uploaded_file(
+                form.screenshots.data, 
+                'uploads/account_screenshots'
+            )
+        
+        # Create account listing
+        account = SocialAccount(
+            seller_id=current_user.id,
+            platform=form.platform.data,
+            username=form.username.data,
+            followers_count=form.followers_count.data,
+            engagement_rate=form.engagement_rate.data,
+            account_age=form.account_age.data,
+            niche=form.niche.data,
+            price=form.price.data,
+            description=form.description.data,
+            screenshots=json.dumps([screenshot_filename]) if screenshot_filename else None,
+            login_email=form.login_email.data,
+            login_password=form.login_password.data,
+            additional_info=form.additional_info.data
+        )
+        
+        db.session.add(account)
+        db.session.commit()
+        
+        flash('Account listed successfully! It will be reviewed by our team.', 'success')
+        return redirect(url_for('dashboard'))
+    
+    return render_template('list_account.html', form=form)
+
 @app.route('/wallet')
 @login_required
 def wallet():
@@ -518,7 +661,6 @@ def wallet():
 @app.route('/deposit', methods=['GET', 'POST'])
 @login_required
 def deposit():
-    from forms import WalletDepositForm
     form = WalletDepositForm()
     settings = Settings.query.first()
     
@@ -583,6 +725,7 @@ def referrals():
                          referral_stats=referral_stats, 
                          referral_code=current_user.referral_code)
 
+# Admin routes
 @app.route('/admin')
 @login_required
 @admin_required
@@ -612,140 +755,97 @@ def admin_dashboard():
                          recent_purchases=recent_purchases,
                          recent_deposits=recent_deposits)
 
-# Utility functions
-def allowed_file(filename, allowed_extensions):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in allowed_extensions
-
-def save_uploaded_file(file, upload_path, max_size=(800, 600)):
-    if file and allowed_file(file.filename, {'png', 'jpg', 'jpeg', 'gif', 'pdf'}):
-        filename = secure_filename(file.filename)
-        filename = f"{uuid.uuid4().hex}_{filename}"
-        filepath = os.path.join(upload_path, filename)
-        
-        # Create directory if it doesn't exist
-        os.makedirs(upload_path, exist_ok=True)
-        
-        if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif')):
-            # Resize image if it's too large
-            image = Image.open(file)
-            image.thumbnail(max_size, Image.Resampling.LANCZOS)
-            image.save(filepath, optimize=True, quality=85)
-        else:
-            file.save(filepath)
-        
-        return filename
-    return None
-
-# List Account Form
-class SocialAccountForm(FlaskForm):
-    platform = SelectField('Platform', choices=[
-        ('instagram', 'Instagram'),
-        ('facebook', 'Facebook'),
-        ('twitter', 'Twitter/X'),
-        ('tiktok', 'TikTok'),
-        ('youtube', 'YouTube'),
-        ('linkedin', 'LinkedIn'),
-        ('snapchat', 'Snapchat'),
-        ('pinterest', 'Pinterest'),
-        ('discord', 'Discord'),
-        ('telegram', 'Telegram'),
-        ('whatsapp_business', 'WhatsApp Business')
-    ], validators=[DataRequired()])
-    
-    username = StringField('Account Username', validators=[
-        DataRequired(), 
-        Length(min=1, max=100)
-    ])
-    followers_count = IntegerField('Followers Count', validators=[
-        DataRequired(), 
-        NumberRange(min=0)
-    ])
-    engagement_rate = DecimalField('Engagement Rate (%)', validators=[
-        Optional(), 
-        NumberRange(min=0, max=100)
-    ], places=2)
-    account_age = StringField('Account Age', validators=[
-        DataRequired(), 
-        Length(max=50)
-    ])
-    niche = StringField('Niche/Category', validators=[
-        DataRequired(), 
-        Length(max=100)
-    ])
-    price = DecimalField('Price (₦)', validators=[
-        DataRequired(), 
-        NumberRange(min=1)
-    ], places=2)
-    description = TextAreaField('Description', validators=[
-        DataRequired(), 
-        Length(min=10, max=1000)
-    ])
-    screenshots = FileField('Account Screenshots', validators=[
-        FileRequired(),
-        FileAllowed(['jpg', 'png', 'gif'], 'Images only!')
-    ])
-    login_email = StringField('Login Email', validators=[
-        DataRequired(), 
-        Email()
-    ])
-    login_password = StringField('Login Password', validators=[
-        DataRequired()
-    ])
-    additional_info = TextAreaField('Additional Information', validators=[
-        Optional(), 
-        Length(max=500)
-    ])
-    submit = SubmitField('List Account')
-
-# List Account Route
-@app.route('/list-account', methods=['GET', 'POST'])
+@app.route('/admin/accounts')
 @login_required
-def list_account():
-    form = SocialAccountForm()
+@admin_required
+def admin_accounts():
+    page = request.args.get('page', 1, type=int)
+    status_filter = request.args.get('status', 'pending')
     
-    if form.validate_on_submit():
-        # Save screenshot
-        screenshot_filename = None
-        if form.screenshots.data:
-            screenshot_filename = save_uploaded_file(
-                form.screenshots.data, 
-                'uploads/account_screenshots'
-            )
-        
-        # Create account listing
-        account = SocialAccount(
-            seller_id=current_user.id,
-            platform=form.platform.data,
-            username=form.username.data,
-            followers_count=form.followers_count.data,
-            engagement_rate=form.engagement_rate.data,
-            account_age=form.account_age.data,
-            niche=form.niche.data,
-            price=form.price.data,
-            description=form.description.data,
-            screenshots=json.dumps([screenshot_filename]) if screenshot_filename else None,
-            login_email=form.login_email.data,
-            login_password=form.login_password.data,
-            additional_info=form.additional_info.data
-        )
-        
-        db.session.add(account)
-        db.session.commit()
-        
-        flash('Account listed successfully! It will be reviewed by our team.', 'success')
-        return redirect(url_for('dashboard'))  # Changed from my_listings to dashboard since it exists
+    accounts = SocialAccount.query.filter_by(status=status_filter).order_by(
+        SocialAccount.created_at.desc()
+    ).paginate(page=page, per_page=20, error_out=False)
     
-    return render_template('list_account.html', form=form)
+    return render_template('admin/accounts.html', accounts=accounts, 
+                         current_status=status_filter)
+
+@app.route('/admin/deposits')
+@login_required
+@admin_required
+def admin_deposits():
+    page = request.args.get('page', 1, type=int)
+    status_filter = request.args.get('status', 'pending')
+    
+    deposits = WalletDeposit.query.filter_by(status=status_filter).order_by(
+        WalletDeposit.created_at.desc()
+    ).paginate(page=page, per_page=20, error_out=False)
+    
+    return render_template('admin/deposits.html', deposits=deposits, 
+                         current_status=status_filter)
+
+@app.route('/admin/purchases')
+@login_required
+@admin_required
+def admin_purchases():
+    page = request.args.get('page', 1, type=int)
+    status_filter = request.args.get('status', 'pending')
+    
+    purchases = Purchase.query.filter_by(status=status_filter).order_by(
+        Purchase.created_at.desc()
+    ).paginate(page=page, per_page=20, error_out=False)
+    
+    return render_template('admin/purchases.html', purchases=purchases, 
+                         current_status=status_filter)
+
+@app.route('/admin/users')
+@login_required
+@admin_required
+def admin_users():
+    page = request.args.get('page', 1, type=int)
+    users = User.query.order_by(User.created_at.desc()).paginate(
+        page=page, per_page=20, error_out=False
+    )
+    
+    return render_template('admin/users.html', users=users)
 
 # PWA Routes
 @app.route('/manifest.json')
 def manifest():
-    return send_from_directory('static', 'manifest.json')
+    return jsonify({
+        "name": "SocialMarket",
+        "short_name": "SocialMarket",
+        "description": "Buy and sell social media accounts",
+        "start_url": "/",
+        "display": "standalone",
+        "background_color": "#ffffff",
+        "theme_color": "#3b82f6",
+        "icons": [
+            {
+                "src": "/static/icons/icon-192x192.png",
+                "sizes": "192x192",
+                "type": "image/png"
+            },
+            {
+                "src": "/static/icons/icon-512x512.png",
+                "sizes": "512x512",
+                "type": "image/png"
+            }
+        ]
+    })
 
 @app.route('/sw.js')
 def service_worker():
     return send_from_directory('static', 'sw.js')
+
+# Error handlers
+@app.errorhandler(404)
+def not_found_error(error):
+    return render_template('errors/404.html'), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    db.session.rollback()
+    return render_template('errors/500.html'), 500
 
 if __name__ == '__main__':
     with app.app_context():

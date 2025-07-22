@@ -1,0 +1,137 @@
+
+{% extends "base.html" %}
+
+{% block title %}Manage Accounts - Admin{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 mb-0">Manage Accounts</h1>
+            <p class="text-muted">Review and approve social media accounts</p>
+        </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <ul class="nav nav-pills">
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if current_status == 'pending' else '' }}" 
+                       href="{{ url_for('admin_accounts', status='pending') }}">
+                        Pending ({{ accounts.total if current_status == 'pending' else 0 }})
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if current_status == 'approved' else '' }}" 
+                       href="{{ url_for('admin_accounts', status='approved') }}">
+                        Approved
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if current_status == 'rejected' else '' }}" 
+                       href="{{ url_for('admin_accounts', status='rejected') }}">
+                        Rejected
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Accounts List -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    {% if accounts.items %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Account</th>
+                                        <th>Platform</th>
+                                        <th>Followers</th>
+                                        <th>Price</th>
+                                        <th>Seller</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for account in accounts.items %}
+                                    <tr>
+                                        <td>
+                                            <div class="fw-bold">@{{ account.username }}</div>
+                                            <small class="text-muted">{{ account.niche }}</small>
+                                        </td>
+                                        <td>
+                                            <i class="fab fa-{{ account.platform }}"></i>
+                                            {{ account.platform.title() }}
+                                        </td>
+                                        <td>{{ "{:,}".format(account.followers_count) }}</td>
+                                        <td>₦{{ "%.2f"|format(account.price) }}</td>
+                                        <td>{{ account.seller.username }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if account.status == 'approved' else 'warning' if account.status == 'pending' else 'danger' }}">
+                                                {{ account.status.title() }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <a href="{{ url_for('account_detail', account_id=account.id) }}" 
+                                               class="btn btn-sm btn-outline-primary">View</a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        {% if accounts.pages > 1 %}
+                        <nav>
+                            <ul class="pagination justify-content-center">
+                                {% if accounts.has_prev %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('admin_accounts', page=accounts.prev_num, status=current_status) }}">Previous</a>
+                                </li>
+                                {% endif %}
+                                
+                                {% for page_num in accounts.iter_pages() %}
+                                    {% if page_num %}
+                                        {% if page_num != accounts.page %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ url_for('admin_accounts', page=page_num, status=current_status) }}">{{ page_num }}</a>
+                                        </li>
+                                        {% else %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ page_num }}</span>
+                                        </li>
+                                        {% endif %}
+                                    {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if accounts.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('admin_accounts', page=accounts.next_num, status=current_status) }}">Next</a>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-list fa-3x text-muted mb-3"></i>
+                            <h4>No {{ current_status }} accounts</h4>
+                            <p class="text-muted">No accounts found with {{ current_status }} status.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
