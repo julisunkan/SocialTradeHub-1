@@ -80,7 +80,7 @@ os.makedirs('uploads/profile_pics', exist_ok=True)
 os.makedirs('static/manifest', exist_ok=True)
 
 # Import models from models.py
-from models import User, SocialAccount, Purchase, WalletDeposit, Settings, Notification, Referral, Invoice
+from models import User, SocialAccount, Purchase, WalletDeposit, Settings, Notification, Referral, Invoice, Page
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -642,6 +642,86 @@ def admin_settings():
 
     return render_template('admin/settings.html', form=form, settings=settings)
 
+@app.route('/admin/pages')
+@login_required
+@admin_required
+def admin_pages():
+    page = request.args.get('page', 1, type=int)
+    pages = Page.query.order_by(Page.updated_at.desc()).paginate(
+        page=page, per_page=20, error_out=False
+    )
+    
+    return render_template('admin/pages.html', pages=pages)
+
+@app.route('/admin/page/create', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def admin_create_page():
+    from forms import PageForm
+    form = PageForm()
+    
+    if form.validate_on_submit():
+        # Check if slug already exists
+        existing_page = Page.query.filter_by(slug=form.slug.data).first()
+        if existing_page:
+            flash('A page with this URL slug already exists.', 'error')
+            return render_template('admin/edit_page.html', form=form, page=None)
+        
+        page = Page(
+            title=form.title.data,
+            slug=form.slug.data,
+            content=form.content.data,
+            meta_description=form.meta_description.data,
+            seo_title=form.seo_title.data,
+            seo_keywords=form.seo_keywords.data,
+            is_active=form.is_active.data,
+            updated_by=current_user.id
+        )
+        
+        db.session.add(page)
+        db.session.commit()
+        
+        flash('Page created successfully!', 'success')
+        return redirect(url_for('admin_pages'))
+    
+    return render_template('admin/edit_page.html', form=form, page=None)
+
+@app.route('/admin/page/<int:id>/edit', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def admin_edit_page(id):
+    from forms import PageForm
+    page = Page.query.get_or_404(id)
+    form = PageForm(obj=page)
+    
+    if form.validate_on_submit():
+        # Check if slug already exists for other pages
+        existing_page = Page.query.filter(Page.slug == form.slug.data, Page.id != id).first()
+        if existing_page:
+            flash('A page with this URL slug already exists.', 'error')
+            return render_template('admin/edit_page.html', form=form, page=page)
+        
+        form.populate_obj(page)
+        page.updated_at = datetime.utcnow()
+        page.updated_by = current_user.id
+        db.session.commit()
+        
+        flash('Page updated successfully!', 'success')
+        return redirect(url_for('admin_pages'))
+    
+    return render_template('admin/edit_page.html', form=form, page=page)
+
+@app.route('/admin/page/<int:id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def admin_delete_page(id):
+    page = Page.query.get_or_404(id)
+    db.session.delete(page)
+    db.session.commit()
+    
+    flash('Page deleted successfully!', 'success')
+    return redirect(url_for('admin_pages'))
+
 @app.route('/purchase/<int:id>', methods=['GET', 'POST'])
 @login_required
 def purchase_account(id):
@@ -753,6 +833,12 @@ def manifest():
 @app.route('/sw.js')
 def service_worker():
     return send_from_directory('static', 'sw.js')
+
+# Public page route
+@app.route('/<slug>')
+def view_page(slug):
+    page = Page.query.filter_by(slug=slug, is_active=True).first_or_404()
+    return render_template('page.html', page=page)
 
 # File serving
 @app.route('/uploads/<path:filename>')

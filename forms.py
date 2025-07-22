@@ -185,133 +185,41 @@ class AdminUserManagementForm(FlaskForm):
     submit = SubmitField('Update User')
 
 class SettingsForm(FlaskForm):
-    site_name = StringField('Site Name', validators=[
-        DataRequired(), 
-        Length(max=100)
-    ])
-    site_description = TextAreaField('Site Description', validators=[
-        Optional(), 
-        Length(max=500)
-    ])
-    commission_rate = DecimalField('Commission Rate (%)', validators=[
-        DataRequired(), 
-        NumberRange(min=0, max=50)
-    ], places=2)
-    referral_commission = DecimalField('Referral Commission (%)', validators=[
-        DataRequired(), 
-        NumberRange(min=0, max=50)
-    ], places=2)
-    min_withdrawal = DecimalField('Minimum Withdrawal (₦)', validators=[
-        DataRequired(), 
-        NumberRange(min=1)
-    ], places=2)
-    max_withdrawal = DecimalField('Maximum Withdrawal (₦)', validators=[
-        DataRequired(), 
-        NumberRange(min=1)
-    ], places=2)
-    bank_name = StringField('Bank Name', validators=[
-        Optional(), 
-        Length(max=100)
-    ])
-    account_number = StringField('Account Number', validators=[
-        Optional(), 
-        Length(max=20)
-    ])
-    account_name = StringField('Account Name', validators=[
-        Optional(), 
-        Length(max=100)
-    ])
-    bank_name_2 = StringField('Bank Name 2', validators=[
-        Optional(), 
-        Length(max=100)
-    ])
-    account_number_2 = StringField('Account Number 2', validators=[
-        Optional(), 
-        Length(max=20)
-    ])
-    account_name_2 = StringField('Account Name 2', validators=[
-        Optional(), 
-        Length(max=100)
-    ])
-    admin_email = EmailField('Admin Email', validators=[
-        DataRequired(), 
-        Email()
-    ])
+    site_name = StringField('Site Name', validators=[DataRequired(), Length(max=100)])
+    currency_symbol = StringField('Currency Symbol', validators=[DataRequired(), Length(max=5)])
+    currency_code = StringField('Currency Code', validators=[DataRequired(), Length(max=3)])
+    commission_rate = DecimalField('Commission Rate (%)', validators=[DataRequired(), NumberRange(min=0, max=50)])
+    referral_commission = DecimalField('Referral Commission (%)', validators=[DataRequired(), NumberRange(min=0, max=20)])
+    min_withdrawal = DecimalField('Minimum Withdrawal', validators=[DataRequired(), NumberRange(min=0)])
+    max_withdrawal = DecimalField('Maximum Withdrawal', validators=[DataRequired(), NumberRange(min=1)])
 
-    # Payment instructions
-    payment_instructions = TextAreaField('Payment Instructions', validators=[
-        Optional(), 
-        Length(max=1000)
-    ])
+    # Bank details
+    bank_name = StringField('Bank Name', validators=[DataRequired(), Length(max=100)])
+    bank_account_number = StringField('Account Number', validators=[DataRequired(), Length(max=20)])
+    bank_account_name = StringField('Account Name', validators=[DataRequired(), Length(max=100)])
 
-    # Social media
-    facebook_url = StringField('Facebook URL')
-    twitter_url = StringField('Twitter URL')
-    instagram_url = StringField('Instagram URL')
-    telegram_url = StringField('Telegram URL')
-    whatsapp_url = StringField('WhatsApp URL')
+    # Contact information
+    admin_email = EmailField('Admin Email', validators=[DataRequired(), Email()])
+    support_email = EmailField('Support Email', validators=[Email()])
+    phone_number = StringField('Phone Number', validators=[Length(max=20)])
 
-    # Footer links
-    help_center_url = StringField('Help Center URL')
-    contact_us_url = StringField('Contact Us URL')
-    safety_tips_url = StringField('Safety Tips URL')
-    terms_of_service_url = StringField('Terms of Service URL')
-    privacy_policy_url = StringField('Privacy Policy URL')
-    refund_policy_url = StringField('Refund Policy URL')
-    cookie_policy_url = StringField('Cookie Policy URL')
-    how_it_works_url = StringField('How It Works URL')
-    pricing_url = StringField('Pricing URL')
+    # Social media links
+    facebook_url = StringField('Facebook URL', validators=[Optional()])
+    twitter_url = StringField('Twitter URL', validators=[Optional()])
+    instagram_url = StringField('Instagram URL', validators=[Optional()])
+    telegram_url = StringField('Telegram URL', validators=[Optional()])
+    whatsapp_url = StringField('WhatsApp URL', validators=[Optional()])
 
-    submit = SubmitField('Update Settings')
-
-class SMTPTestForm(FlaskForm):
-    smtp_server = StringField('SMTP Server', validators=[
-        DataRequired(), 
-        Length(max=100)
-    ])
-    smtp_port = IntegerField('SMTP Port', validators=[
-        DataRequired(), 
-        NumberRange(min=1, max=65535)
-    ])
-    smtp_username = StringField('SMTP Username', validators=[
-        DataRequired(), 
-        Length(max=100)
-    ])
-    smtp_password = PasswordField('SMTP Password', validators=[
-        DataRequired()
-    ])
-    test_email = EmailField('Test Email', validators=[
-        DataRequired(), 
-        Email()
-    ])
-    submit = SubmitField('Test SMTP Connection')
+    submit = SubmitField('Save Settings')
 
 class PageForm(FlaskForm):
-    title = StringField('Page Title', validators=[
-        DataRequired(), 
-        Length(max=200)
-    ])
-    slug = StringField('Page URL Slug', validators=[
-        DataRequired(), 
-        Length(max=100)
-    ])
-    content = TextAreaField('Page Content', validators=[
-        DataRequired(),
-        Length(min=10)
-    ])
-    meta_description = TextAreaField('Meta Description', validators=[
-        Optional(), 
-        Length(max=300)
-    ])
-    seo_title = StringField('SEO Title', validators=[
-        Optional(), 
-        Length(max=200)
-    ])
-    seo_keywords = TextAreaField('SEO Keywords', validators=[
-        Optional(), 
-        Length(max=500)
-    ])
-    is_active = BooleanField('Active Page')
+    title = StringField('Page Title', validators=[DataRequired(), Length(max=200)])
+    slug = StringField('URL Slug', validators=[DataRequired(), Length(max=100)])
+    content = TextAreaField('Content', validators=[DataRequired()])
+    meta_description = StringField('Meta Description', validators=[Optional(), Length(max=160)])
+    seo_title = StringField('SEO Title', validators=[Optional(), Length(max=200)])
+    seo_keywords = StringField('SEO Keywords', validators=[Optional(), Length(max=500)])
+    is_active = BooleanField('Active')
     submit = SubmitField('Save Page')
 
 class SearchForm(FlaskForm):
