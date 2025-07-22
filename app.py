@@ -428,7 +428,13 @@ def deposit():
             return redirect(url_for('wallet'))
         except Exception as e:
             db.session.rollback()
-            flash('Error submitting deposit request. Please try again.', 'error')
+            flash(f'Error submitting deposit request: {str(e)}', 'error')
+            print(f"Deposit error: {e}")  # Debug logging
+    else:
+        # Show form validation errors
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f'{field}: {error}', 'error')
 
     return render_template('deposit.html', form=form, settings=settings)
 

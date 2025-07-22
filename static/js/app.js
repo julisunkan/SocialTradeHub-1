@@ -277,6 +277,35 @@ function loadContent(url, containerId) {
         });
 }
 
+// Show/hide account credentials based on purchase status
+function toggleAccountCredentials(purchaseId, show) {
+    const credentialsDiv = document.getElementById(`credentials-${purchaseId}`);
+    if (credentialsDiv) {
+        if (show) {
+            credentialsDiv.style.display = 'block';
+            // Don't auto-hide credentials - let user control visibility
+        } else {
+            credentialsDiv.style.display = 'none';
+        }
+    }
+}
+
+// Toggle optional account details visibility
+function toggleOptionalDetails(accountId) {
+    const optionalDiv = document.getElementById(`optional-details-${accountId}`);
+    const toggleBtn = document.getElementById(`toggle-optional-${accountId}`);
+
+    if (optionalDiv && toggleBtn) {
+        if (optionalDiv.style.display === 'none' || optionalDiv.style.display === '') {
+            optionalDiv.style.display = 'block';
+            toggleBtn.innerHTML = '<i class="fas fa-eye-slash me-1"></i>Hide Optional Details';
+        } else {
+            optionalDiv.style.display = 'none';
+            toggleBtn.innerHTML = '<i class="fas fa-eye me-1"></i>Show Optional Details';
+        }
+    }
+}
+
 // Expose global functions
 window.getPlatformIcon = getPlatformIcon;
 window.formatFollowers = formatFollowers;

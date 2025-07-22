@@ -69,6 +69,18 @@
                             <li><i class="fas fa-undo text-warning me-2"></i>7-day money-back guarantee</li>
                         </ul>
                     </div>
+
+                    {% if account.additional_info %}
+                    <div class="mb-3">
+                        <button type="button" class="btn btn-outline-info btn-sm" id="toggle-optional-{{ account.id }}" onclick="toggleOptionalDetails({{ account.id }})">
+                            <i class="fas fa-eye me-1"></i>Show Optional Details
+                        </button>
+                        <div id="optional-details-{{ account.id }}" class="alert alert-info mt-2" style="display: none;">
+                            <h6><i class="fas fa-info-circle me-1"></i>Additional Information</h6>
+                            <p class="mb-0">{{ account.additional_info }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
