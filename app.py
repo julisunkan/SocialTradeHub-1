@@ -18,6 +18,9 @@ from decimal import Decimal
 import uuid
 import json
 from functools import wraps
+# Import forms after db initialization
+from PIL import Image
+import os
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -505,6 +508,132 @@ def admin_dashboard():
                          recent_accounts=recent_accounts,
                          recent_purchases=recent_purchases,
                          recent_deposits=recent_deposits)
+
+# Utility functions
+def allowed_file(filename, allowed_extensions):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in allowed_extensions
+
+def save_uploaded_file(file, upload_path, max_size=(800, 600)):
+    if file and allowed_file(file.filename, {'png', 'jpg', 'jpeg', 'gif', 'pdf'}):
+        filename = secure_filename(file.filename)
+        filename = f"{uuid.uuid4().hex}_{filename}"
+        filepath = os.path.join(upload_path, filename)
+        
+        # Create directory if it doesn't exist
+        os.makedirs(upload_path, exist_ok=True)
+        
+        if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif')):
+            # Resize image if it's too large
+            image = Image.open(file)
+            image.thumbnail(max_size, Image.Resampling.LANCZOS)
+            image.save(filepath, optimize=True, quality=85)
+        else:
+            file.save(filepath)
+        
+        return filename
+    return None
+
+# List Account Form
+class SocialAccountForm(FlaskForm):
+    platform = SelectField('Platform', choices=[
+        ('instagram', 'Instagram'),
+        ('facebook', 'Facebook'),
+        ('twitter', 'Twitter/X'),
+        ('tiktok', 'TikTok'),
+        ('youtube', 'YouTube'),
+        ('linkedin', 'LinkedIn'),
+        ('snapchat', 'Snapchat'),
+        ('pinterest', 'Pinterest'),
+        ('discord', 'Discord'),
+        ('telegram', 'Telegram'),
+        ('whatsapp_business', 'WhatsApp Business')
+    ], validators=[DataRequired()])
+    
+    username = StringField('Account Username', validators=[
+        DataRequired(), 
+        Length(min=1, max=100)
+    ])
+    followers_count = IntegerField('Followers Count', validators=[
+        DataRequired(), 
+        NumberRange(min=0)
+    ])
+    engagement_rate = DecimalField('Engagement Rate (%)', validators=[
+        Optional(), 
+        NumberRange(min=0, max=100)
+    ], places=2)
+    account_age = StringField('Account Age', validators=[
+        DataRequired(), 
+        Length(max=50)
+    ])
+    niche = StringField('Niche/Category', validators=[
+        DataRequired(), 
+        Length(max=100)
+    ])
+    price = DecimalField('Price (₦)', validators=[
+        DataRequired(), 
+        NumberRange(min=1)
+    ], places=2)
+    description = TextAreaField('Description', validators=[
+        DataRequired(), 
+        Length(min=10, max=1000)
+    ])
+    screenshots = FileField('Account Screenshots', validators=[
+        FileRequired(),
+        FileAllowed(['jpg', 'png', 'gif'], 'Images only!')
+    ])
+    login_email = StringField('Login Email', validators=[
+        DataRequired(), 
+        Email()
+    ])
+    login_password = StringField('Login Password', validators=[
+        DataRequired()
+    ])
+    additional_info = TextAreaField('Additional Information', validators=[
+        Optional(), 
+        Length(max=500)
+    ])
+    submit = SubmitField('List Account')
+
+# List Account Route
+@app.route('/list-account', methods=['GET', 'POST'])
+@login_required
+def list_account():
+    form = SocialAccountForm()
+    
+    if form.validate_on_submit():
+        # Save screenshot
+        screenshot_filename = None
+        if form.screenshots.data:
+            screenshot_filename = save_uploaded_file(
+                form.screenshots.data, 
+                'uploads/account_screenshots'
+            )
+        
+        # Create account listing
+        account = SocialAccount(
+            seller_id=current_user.id,
+            platform=form.platform.data,
+            username=form.username.data,
+            followers_count=form.followers_count.data,
+            engagement_rate=form.engagement_rate.data,
+            account_age=form.account_age.data,
+            niche=form.niche.data,
+            price=form.price.data,
+            description=form.description.data,
+            screenshots=json.dumps([screenshot_filename]) if screenshot_filename else None,
+            login_email=form.login_email.data,
+            login_password=form.login_password.data,
+            additional_info=form.additional_info.data
+        )
+        
+        db.session.add(account)
+        db.session.commit()
+        
+        flash('Account listed successfully! It will be reviewed by our team.', 'success')
+        return redirect(url_for('dashboard'))  # Changed from my_listings to dashboard since it exists
+    
+    return render_template('list_account.html', form=form)
 
 # PWA Routes
 @app.route('/manifest.json')

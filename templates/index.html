@@ -143,7 +143,7 @@
                         </div>
                         <div class="d-flex justify-content-between align-items-center">
                             <h4 class="text-success mb-0">₦{{ "{:,.2f}".format(account.price) }}</h4>
-                            <a href="{{ url_for('view_account', id=account.id) }}" class="btn btn-primary btn-sm">
+                            <a href="{{ url_for('account_detail', account_id=account.id) }}" class="btn btn-primary btn-sm">
                                 View Details
                             </a>
                         </div>
@@ -190,7 +190,7 @@
                         </small>
                         <div class="d-flex justify-content-between align-items-center mt-2">
                             <strong class="text-success">₦{{ "{:,.0f}".format(account.price) }}</strong>
-                            <a href="{{ url_for('view_account', id=account.id) }}" class="btn btn-sm btn-outline-primary">
+                            <a href="{{ url_for('account_detail', account_id=account.id) }}" class="btn btn-sm btn-outline-primary">
                                 View
                             </a>
                         </div>

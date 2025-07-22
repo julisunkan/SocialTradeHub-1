@@ -274,7 +274,7 @@ def purchase_account(id):
     
     if account.seller_id == current_user.id:
         flash('You cannot purchase your own account.', 'error')
-        return redirect(url_for('view_account', id=id))
+        return redirect(url_for('account_detail', account_id=id))
     
     form = PurchaseForm()
     settings = Settings.query.first()
