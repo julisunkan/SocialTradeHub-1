@@ -248,11 +248,12 @@ document.addEventListener('DOMContentLoaded', function() {
         showToast('App installed successfully!', 'success');
     });
 
-    // Hide login/register buttons if user is logged in
+    // Hide login/register buttons if user is logged in (check if dashboard or user-specific elements exist)
     const loginButton = document.getElementById('login-btn');
     const registerButton = document.getElementById('register-btn');
+    const userMenu = document.querySelector('.navbar-nav .dropdown-toggle'); // User dropdown in navbar
 
-    if (loginButton && registerButton && localStorage.getItem('user')) { // Assuming 'user' is stored in localStorage upon login
+    if (loginButton && registerButton && userMenu) {
         loginButton.style.display = 'none';
         registerButton.style.display = 'none';
     }
