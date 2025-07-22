@@ -224,14 +224,6 @@ class Settings(db.Model):
     account_number = db.Column(db.String(20))
     account_name = db.Column(db.String(100))
     
-    # Secondary bank details
-    bank_name_2 = db.Column(db.String(100))
-    account_number_2 = db.Column(db.String(20))
-    account_name_2 = db.Column(db.String(100))
-    
-    # Payment instructions
-    payment_instructions = db.Column(db.Text)
-    
     # Social media links
     facebook_url = db.Column(db.String(255))
     twitter_url = db.Column(db.String(255))
@@ -438,18 +430,10 @@ class SettingsForm(FlaskForm):
     min_withdrawal = DecimalField('Min Withdrawal', validators=[DataRequired(), NumberRange(min=0)], places=2)
     max_withdrawal = DecimalField('Max Withdrawal', validators=[DataRequired(), NumberRange(min=0)], places=2)
     
-    # Primary Bank Account
+    # Bank Account Details
     bank_name = StringField('Bank Name', validators=[Optional()])
     account_number = StringField('Account Number', validators=[Optional()])
     account_name = StringField('Account Name', validators=[Optional()])
-    
-    # Secondary Bank Account
-    bank_name_2 = StringField('Bank Name 2 (Optional)', validators=[Optional()])
-    account_number_2 = StringField('Account Number 2', validators=[Optional()])
-    account_name_2 = StringField('Account Name 2', validators=[Optional()])
-    
-    # Payment Instructions
-    payment_instructions = TextAreaField('Payment Instructions', validators=[Optional()])
     
     admin_email = EmailField('Admin Email', validators=[Optional(), Email()])
     submit = SubmitField('Save Settings')
