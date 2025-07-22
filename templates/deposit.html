@@ -25,6 +25,16 @@
                             </div>
                         </div>
                         
+                        {% if settings.bank_name_2 %}
+                        <div class="col-md-6">
+                            <div class="alert alert-success mb-3">
+                                <h6 class="fw-bold mb-2">Alternative Account</h6>
+                                <p class="mb-1"><strong>Bank Name:</strong> {{ settings.bank_name_2 }}</p>
+                                <p class="mb-1"><strong>Account Number:</strong> {{ settings.account_number_2 }}</p>
+                                <p class="mb-0"><strong>Account Name:</strong> {{ settings.account_name_2 }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
 
                     {% if settings.payment_instructions %}
