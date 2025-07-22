@@ -1,0 +1,100 @@
+OperationalError
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such column: settings.telegram_url
+[SQL: SELECT settings.id AS settings_id, settings.site_name AS settings_site_name, settings.site_description AS settings_site_description, settings.site_logo AS settings_site_logo, settings.currency_symbol AS settings_currency_symbol, settings.currency_code AS settings_currency_code, settings.commission_rate AS settings_commission_rate, settings.referral_commission AS settings_referral_commission, settings.min_withdrawal AS settings_min_withdrawal, settings.max_withdrawal AS settings_max_withdrawal, settings.smtp_server AS settings_smtp_server, settings.smtp_port AS settings_smtp_port, settings.smtp_username AS settings_smtp_username, settings.smtp_password AS settings_smtp_password, settings.admin_email AS settings_admin_email, settings.bank_name AS settings_bank_name, settings.account_number AS settings_account_number, settings.account_name AS settings_account_name, settings.facebook_url AS settings_facebook_url, settings.twitter_url AS settings_twitter_url, settings.instagram_url AS settings_instagram_url, settings.telegram_url AS settings_telegram_url, settings.whatsapp_url AS settings_whatsapp_url, settings.help_center_url AS settings_help_center_url, settings.contact_us_url AS settings_contact_us_url, settings.safety_tips_url AS settings_safety_tips_url, settings.terms_of_service_url AS settings_terms_of_service_url, settings.privacy_policy_url AS settings_privacy_policy_url, settings.refund_policy_url AS settings_refund_policy_url, settings.cookie_policy_url AS settings_cookie_policy_url, settings.how_it_works_url AS settings_how_it_works_url, settings.pricing_url AS settings_pricing_url, settings.updated_at AS settings_updated_at 
+FROM settings
+ LIMIT ? OFFSET ?]
+[parameters: (1, 0)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+
+Traceback (most recent call last)
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1963, in _exec_single_context
+self.dialect.do_execute(
+^
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 943, in do_execute
+cursor.execute(statement, parameters)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The above exception was the direct cause of the following exception:
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/flask/app.py", line 1536, in __call__
+return self.wsgi_app(environ, start_response)
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/flask/app.py", line 1514, in wsgi_app
+response = self.handle_exception(e)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/flask_cors/extension.py", line 176, in wrapped_function
+return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                            ^^^^^^^^^^^^^^^^^^
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+response = self.full_dispatch_request()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/flask/app.py", line 919, in full_dispatch_request
+rv = self.handle_user_exception(e)
+     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/flask_cors/extension.py", line 176, in wrapped_function
+return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                            ^^^^^^^^^^^^^^^^^^
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/flask/app.py", line 917, in full_dispatch_request
+rv = self.dispatch_request()
+     ^^^^^^^^^^^^^^^^^^^^^^^
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/flask/app.py", line 902, in dispatch_request
+return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/home/runner/workspace/routes.py", line 71, in index
+return render_template('index.html', featured_accounts=featured_accounts,
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/flask/templating.py", line 150, in render_template
+return _render(app, template, context)
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/flask/templating.py", line 127, in _render
+app.update_template_context(context)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/flask/app.py", line 530, in update_template_context
+context.update(self.ensure_sync(func)())
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+File "/home/runner/workspace/routes.py", line 29, in inject_settings
+settings = Settings.query.first()
+           ^^^^^^^^^^^^^^^^^^^^^^
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2759, in first
+return self.limit(1)._iter().first()  # type: ignore
+       ^^^^^^^^^^^^^^^^^^^^^
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2857, in _iter
+result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                              
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2365, in execute
+return self._execute_internal(
+       
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2251, in _execute_internal
+result: Result[Any] = compile_state_cls.orm_execute_statement(
+                      
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/orm/context.py", line 306, in orm_execute_statement
+result = conn.execute(
+         
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1415, in execute
+return meth(
+       
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/sql/elements.py", line 523, in _execute_on_connection
+return connection._execute_clauseelement(
+       
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1637, in _execute_clauseelement
+ret = self._execute_context(
+      
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1842, in _execute_context
+return self._exec_single_context(
+       
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1982, in _exec_single_context
+self._handle_dbapi_exception(
+^
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2351, in _handle_dbapi_exception
+raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1963, in _exec_single_context
+self.dialect.do_execute(
+^
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 943, in do_execute
+cursor.execute(statement, parameters)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such column: settings.telegram_url
+[SQL: SELECT settings.id AS settings_id, settings.site_name AS settings_site_name, settings.site_description AS settings_site_description, settings.site_logo AS settings_site_logo, settings.currency_symbol AS settings_currency_symbol, settings.currency_code AS settings_currency_code, settings.commission_rate AS settings_commission_rate, settings.referral_commission AS settings_referral_commission, settings.min_withdrawal AS settings_min_withdrawal, settings.max_withdrawal AS settings_max_withdrawal, settings.smtp_server AS settings_smtp_server, settings.smtp_port AS settings_smtp_port, settings.smtp_username AS settings_smtp_username, settings.smtp_password AS settings_smtp_password, settings.admin_email AS settings_admin_email, settings.bank_name AS settings_bank_name, settings.account_number AS settings_account_number, settings.account_name AS settings_account_name, settings.facebook_url AS settings_facebook_url, settings.twitter_url AS settings_twitter_url, settings.instagram_url AS settings_instagram_url, settings.telegram_url AS settings_telegram_url, settings.whatsapp_url AS settings_whatsapp_url, settings.help_center_url AS settings_help_center_url, settings.contact_us_url AS settings_contact_us_url, settings.safety_tips_url AS settings_safety_tips_url, settings.terms_of_service_url AS settings_terms_of_service_url, settings.privacy_policy_url AS settings_privacy_policy_url, settings.refund_policy_url AS settings_refund_policy_url, settings.cookie_policy_url AS settings_cookie_policy_url, settings.how_it_works_url AS settings_how_it_works_url, settings.pricing_url AS settings_pricing_url, settings.updated_at AS settings_updated_at
+FROM settings
+LIMIT ? OFFSET ?]
+[parameters: (1, 0)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
