@@ -112,20 +112,20 @@ def save_uploaded_file(file, upload_path, max_size=(800, 600)):
             # Resize and compress image to be under 15KB
             image = Image.open(file)
             image.thumbnail(max_size, Image.Resampling.LANCZOS)
-            
+
             # Start with high quality and reduce until file is under 15KB
             quality = 95
             temp_path = filepath + '.temp'
-            
+
             while quality > 10:
                 image.save(temp_path, optimize=True, quality=quality)
                 if os.path.getsize(temp_path) <= 15 * 1024:  # 15KB
                     break
                 quality -= 5
-            
+
             # Move temp file to final location
             os.rename(temp_path, filepath)
-            
+
             # If still too large, resize further
             if os.path.getsize(filepath) > 15 * 1024:
                 image.thumbnail((400, 300), Image.Resampling.LANCZOS)
@@ -683,7 +683,7 @@ def admin_pages():
     pages = Page.query.order_by(Page.updated_at.desc()).paginate(
         page=page, per_page=20, error_out=False
     )
-    
+
     return render_template('admin/pages.html', pages=pages)
 
 @app.route('/admin/page/create', methods=['GET', 'POST'])
@@ -692,14 +692,14 @@ def admin_pages():
 def admin_create_page():
     from forms import PageForm
     form = PageForm()
-    
+
     if form.validate_on_submit():
         # Check if slug already exists
         existing_page = Page.query.filter_by(slug=form.slug.data).first()
         if existing_page:
             flash('A page with this URL slug already exists.', 'error')
             return render_template('admin/edit_page.html', form=form, page=None)
-        
+
         page = Page(
             title=form.title.data,
             slug=form.slug.data,
@@ -710,13 +710,13 @@ def admin_create_page():
             is_active=form.is_active.data,
             updated_by=current_user.id
         )
-        
+
         db.session.add(page)
         db.session.commit()
-        
+
         flash('Page created successfully!', 'success')
         return redirect(url_for('admin_pages'))
-    
+
     return render_template('admin/edit_page.html', form=form, page=None)
 
 @app.route('/admin/page/<int:id>/edit', methods=['GET', 'POST'])
@@ -726,22 +726,22 @@ def admin_edit_page(id):
     from forms import PageForm
     page = Page.query.get_or_404(id)
     form = PageForm(obj=page)
-    
+
     if form.validate_on_submit():
         # Check if slug already exists for other pages
         existing_page = Page.query.filter(Page.slug == form.slug.data, Page.id != id).first()
         if existing_page:
             flash('A page with this URL slug already exists.', 'error')
             return render_template('admin/edit_page.html', form=form, page=page)
-        
+
         form.populate_obj(page)
         page.updated_at = datetime.utcnow()
         page.updated_by = current_user.id
         db.session.commit()
-        
+
         flash('Page updated successfully!', 'success')
         return redirect(url_for('admin_pages'))
-    
+
     return render_template('admin/edit_page.html', form=form, page=page)
 
 @app.route('/admin/page/<int:id>/delete', methods=['POST'])
@@ -751,7 +751,7 @@ def admin_delete_page(id):
     page = Page.query.get_or_404(id)
     db.session.delete(page)
     db.session.commit()
-    
+
     flash('Page deleted successfully!', 'success')
     return redirect(url_for('admin_pages'))
 
@@ -776,20 +776,20 @@ def admin_footer_links():
         settings.cookie_policy_url = request.form.get('cookie_policy_url', '')
         settings.how_it_works_url = request.form.get('how_it_works_url', '')
         settings.pricing_url = request.form.get('pricing_url', '')
-        
+
         # Update social media links
         settings.facebook_url = request.form.get('facebook_url', '')
         settings.twitter_url = request.form.get('twitter_url', '')
         settings.instagram_url = request.form.get('instagram_url', '')
         settings.telegram_url = request.form.get('telegram_url', '')
         settings.whatsapp_url = request.form.get('whatsapp_url', '')
-        
+
         settings.updated_at = datetime.utcnow()
         db.session.commit()
-        
+
         flash('Footer links updated successfully!', 'success')
         return redirect(url_for('admin_footer_links'))
-    
+
     return render_template('admin/footer_links.html', settings=settings)
 
 @app.route('/purchase/<int:id>', methods=['GET', 'POST'])
@@ -917,17 +917,17 @@ def uploaded_file(filename):
     # Allow users to view their own uploaded files and admins to view all
     if current_user.role == 'admin':
         return send_from_directory('uploads', filename)
-    
+
     # For regular users, only allow viewing payment proofs from their own deposits/purchases
     file_path = os.path.join('uploads', filename)
     if os.path.exists(file_path):
         # Check if the file belongs to the current user
         user_deposit = WalletDeposit.query.filter_by(user_id=current_user.id, payment_proof=filename.split('/')[-1]).first()
         user_purchase = Purchase.query.filter_by(buyer_id=current_user.id, payment_proof=filename.split('/')[-1]).first()
-        
+
         if user_deposit or user_purchase:
             return send_from_directory('uploads', filename)
-    
+
     flash('Access denied.', 'error')
     return redirect(url_for('dashboard'))
 

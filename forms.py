@@ -197,12 +197,12 @@ class SettingsForm(FlaskForm):
     bank_name = StringField('Bank Name', validators=[DataRequired(), Length(max=100)])
     account_number = StringField('Account Number', validators=[DataRequired(), Length(max=20)])
     account_name = StringField('Account Name', validators=[DataRequired(), Length(max=100)])
-    
+
     # Second bank account (optional)
     bank_name_2 = StringField('Bank Name 2 (Optional)', validators=[Optional(), Length(max=100)])
     account_number_2 = StringField('Account Number 2 (Optional)', validators=[Optional(), Length(max=20)])
     account_name_2 = StringField('Account Name 2 (Optional)', validators=[Optional(), Length(max=100)])
-    
+
     # Payment instructions
     payment_instructions = TextAreaField('Payment Instructions', validators=[Optional()])
 
@@ -265,3 +265,28 @@ class SearchForm(FlaskForm):
         ('followers_desc', 'Followers: High to Low')
     ], validators=[Optional()])
     submit = SubmitField('Search')
+
+class DepositForm(FlaskForm):
+    amount = DecimalField('Amount (₦)', validators=[DataRequired(), NumberRange(min=100, message="Minimum deposit amount is ₦100")])
+    deposit_method = SelectField('Deposit Method', choices=[('bank_transfer', 'Bank Transfer')], validators=[DataRequired()])
+    payment_proof = FileField('Payment Proof', validators=[DataRequired()])
+    submit = SubmitField('Submit Deposit')
+
+class ReviewDepositForm(FlaskForm):
+    status = SelectField('Status', choices=[
+        ('pending', 'Pending'),
+        ('confirmed', 'Confirmed'),
+        ('rejected', 'Rejected')
+    ], validators=[DataRequired()])
+    admin_notes = TextAreaField('Admin Notes')
+    submit = SubmitField('Update Status')
+
+class ReviewPurchaseForm(FlaskForm):
+    status = SelectField('Status', choices=[
+        ('pending', 'Pending'),
+        ('processing', 'Processing'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled')
+    ], validators=[DataRequired()])
+    admin_notes = TextAreaField('Admin Notes')
+    submit = SubmitField('Update Status')
