@@ -221,6 +221,18 @@ class SettingsForm(FlaskForm):
         Optional(), 
         Length(max=100)
     ])
+    bank_name_2 = StringField('Bank Name 2', validators=[
+        Optional(), 
+        Length(max=100)
+    ])
+    account_number_2 = StringField('Account Number 2', validators=[
+        Optional(), 
+        Length(max=20)
+    ])
+    account_name_2 = StringField('Account Name 2', validators=[
+        Optional(), 
+        Length(max=100)
+    ])
     admin_email = EmailField('Admin Email', validators=[
         DataRequired(), 
         Email()
