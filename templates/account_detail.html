@@ -97,7 +97,7 @@
                     {% if current_user.is_authenticated %}
                         {% if current_user.id != account.seller_id %}
                         <div class="d-grid gap-2">
-                            <a href="#" class="btn btn-success btn-lg">
+                            <a href="{{ url_for('purchase_account', id=account.id) }}" class="btn btn-success btn-lg">
                                 <i class="fas fa-shopping-cart me-2"></i>
                                 Buy Now
                             </a>

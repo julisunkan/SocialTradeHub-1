@@ -978,7 +978,17 @@ def initialize_app():
                 admin_email='admin@socialmedia.com',
                 bank_name='First Bank Nigeria',
                 account_number='0123456789',
-                account_name='SocialMarket Ltd'
+                account_name='SocialMarket Ltd',
+                # Footer page URLs
+                help_center_url='/help-center',
+                contact_us_url='/contact-us',
+                safety_tips_url='/safety-tips',
+                terms_of_service_url='/terms-of-service',
+                privacy_policy_url='/privacy-policy',
+                refund_policy_url='/refund-policy',
+                cookie_policy_url='/cookie-policy',
+                how_it_works_url='/how-it-works',
+                pricing_url='/pricing'
             )
             db.session.add(default_settings)
             db.session.commit()
