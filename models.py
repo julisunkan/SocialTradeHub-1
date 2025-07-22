@@ -5,7 +5,7 @@ from datetime import datetime
 from decimal import Decimal
 import uuid
 
-db = SQLAlchemy()
+db = None
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -39,7 +39,8 @@ class User(UserMixin, db.Model):
     last_login = db.Column(db.DateTime)
     
     # Relationships
-    accounts_for_sale = db.relationship('SocialAccount', backref='seller', lazy=True)
+    accounts_for_sale = db.relationship('SocialAccount', foreign_keys='SocialAccount.seller_id', backref='seller', lazy=True)
+    accounts_reviewed = db.relationship('SocialAccount', foreign_keys='SocialAccount.reviewed_by', backref='reviewer', lazy=True)
     purchases = db.relationship('Purchase', backref='buyer', lazy=True)
     deposits = db.relationship('WalletDeposit', backref='user', lazy=True)
     referrals = db.relationship('User', backref=db.backref('referrer', remote_side=[id]))
