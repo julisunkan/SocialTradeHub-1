@@ -61,8 +61,14 @@ def fix_database():
         cursor.execute("PRAGMA table_info(settings)")
         settings_columns = [row[1] for row in cursor.fetchall()]
         
+        print(f"Current settings columns: {settings_columns}")
+        
         # Add missing settings columns
         settings_missing = []
+        if 'site_description' not in settings_columns:
+            settings_missing.append(('site_description', 'TEXT'))
+        if 'site_logo' not in settings_columns:
+            settings_missing.append(('site_logo', 'TEXT'))
         if 'currency_symbol' not in settings_columns:
             settings_missing.append(('currency_symbol', 'TEXT'))
         if 'currency_code' not in settings_columns:
@@ -77,6 +83,50 @@ def fix_database():
             settings_missing.append(('max_withdrawal', 'DECIMAL(10,2)'))
         if 'admin_email' not in settings_columns:
             settings_missing.append(('admin_email', 'TEXT'))
+        if 'smtp_server' not in settings_columns:
+            settings_missing.append(('smtp_server', 'TEXT'))
+        if 'smtp_port' not in settings_columns:
+            settings_missing.append(('smtp_port', 'INTEGER'))
+        if 'smtp_username' not in settings_columns:
+            settings_missing.append(('smtp_username', 'TEXT'))
+        if 'smtp_password' not in settings_columns:
+            settings_missing.append(('smtp_password', 'TEXT'))
+        if 'bank_name' not in settings_columns:
+            settings_missing.append(('bank_name', 'TEXT'))
+        if 'account_number' not in settings_columns:
+            settings_missing.append(('account_number', 'TEXT'))
+        if 'account_name' not in settings_columns:
+            settings_missing.append(('account_name', 'TEXT'))
+        if 'facebook_url' not in settings_columns:
+            settings_missing.append(('facebook_url', 'TEXT'))
+        if 'twitter_url' not in settings_columns:
+            settings_missing.append(('twitter_url', 'TEXT'))
+        if 'instagram_url' not in settings_columns:
+            settings_missing.append(('instagram_url', 'TEXT'))
+        if 'telegram_url' not in settings_columns:
+            settings_missing.append(('telegram_url', 'TEXT'))
+        if 'whatsapp_url' not in settings_columns:
+            settings_missing.append(('whatsapp_url', 'TEXT'))
+        if 'help_center_url' not in settings_columns:
+            settings_missing.append(('help_center_url', 'TEXT'))
+        if 'contact_us_url' not in settings_columns:
+            settings_missing.append(('contact_us_url', 'TEXT'))
+        if 'safety_tips_url' not in settings_columns:
+            settings_missing.append(('safety_tips_url', 'TEXT'))
+        if 'terms_of_service_url' not in settings_columns:
+            settings_missing.append(('terms_of_service_url', 'TEXT'))
+        if 'privacy_policy_url' not in settings_columns:
+            settings_missing.append(('privacy_policy_url', 'TEXT'))
+        if 'refund_policy_url' not in settings_columns:
+            settings_missing.append(('refund_policy_url', 'TEXT'))
+        if 'cookie_policy_url' not in settings_columns:
+            settings_missing.append(('cookie_policy_url', 'TEXT'))
+        if 'how_it_works_url' not in settings_columns:
+            settings_missing.append(('how_it_works_url', 'TEXT'))
+        if 'pricing_url' not in settings_columns:
+            settings_missing.append(('pricing_url', 'TEXT'))
+        if 'updated_at' not in settings_columns:
+            settings_missing.append(('updated_at', 'DATETIME'))
         
         for column_name, column_type in settings_missing:
             try:
