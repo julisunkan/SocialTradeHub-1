@@ -135,6 +135,44 @@ def fix_database():
             except sqlite3.OperationalError as e:
                 print(f"Error adding settings column {column_name}: {e}")
         
+        # Check notification table
+        cursor.execute("PRAGMA table_info(notification)")
+        notification_columns = [row[1] for row in cursor.fetchall()]
+        
+        print(f"Current notification columns: {notification_columns}")
+        
+        # Add missing notification columns
+        notification_missing = []
+        if 'type' not in notification_columns:
+            notification_missing.append(('type', 'TEXT'))
+        
+        for column_name, column_type in notification_missing:
+            try:
+                cursor.execute(f"ALTER TABLE notification ADD COLUMN {column_name} {column_type}")
+                print(f"Added notification column: {column_name}")
+            except sqlite3.OperationalError as e:
+                print(f"Error adding notification column {column_name}: {e}")
+        
+        # Check activity_log table
+        cursor.execute("PRAGMA table_info(activity_log)")
+        activity_log_columns = [row[1] for row in cursor.fetchall()]
+        
+        print(f"Current activity_log columns: {activity_log_columns}")
+        
+        # Add missing activity_log columns
+        activity_log_missing = []
+        if 'ip_address' not in activity_log_columns:
+            activity_log_missing.append(('ip_address', 'TEXT'))
+        if 'user_agent' not in activity_log_columns:
+            activity_log_missing.append(('user_agent', 'TEXT'))
+        
+        for column_name, column_type in activity_log_missing:
+            try:
+                cursor.execute(f"ALTER TABLE activity_log ADD COLUMN {column_name} {column_type}")
+                print(f"Added activity_log column: {column_name}")
+            except sqlite3.OperationalError as e:
+                print(f"Error adding activity_log column {column_name}: {e}")
+        
         conn.commit()
         print("Database schema updated successfully!")
         
