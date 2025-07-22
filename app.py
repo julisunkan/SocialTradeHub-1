@@ -1,0 +1,549 @@
+import os
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_from_directory
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user, UserMixin
+from flask_wtf import FlaskForm
+from flask_mail import Mail, Message
+from flask_cors import CORS
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
+from wtforms import StringField, TextAreaField, SelectField, DecimalField, IntegerField, BooleanField, PasswordField, EmailField, SubmitField
+from wtforms.validators import DataRequired, Length, Email, NumberRange, Optional, EqualTo, ValidationError
+from flask_wtf.file import FileField, FileAllowed, FileRequired
+from datetime import datetime, timedelta
+from decimal import Decimal
+import uuid
+import json
+from functools import wraps
+
+# Initialize Flask app
+app = Flask(__name__)
+
+# Configuration
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'social-marketplace-secret-key-2024')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///social_marketplace.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['WTF_CSRF_ENABLED'] = True
+app.config['UPLOAD_FOLDER'] = 'uploads'
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+
+# Email configuration
+app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
+app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER')
+
+# Initialize extensions
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
+login_manager.login_message = 'Please log in to access this page.'
+mail = Mail(app)
+cors = CORS(app)
+
+# Rate limiting
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=["1000 per hour"]
+)
+
+# Create upload directories
+os.makedirs('uploads/payment_proofs', exist_ok=True)
+os.makedirs('uploads/account_screenshots', exist_ok=True)
+os.makedirs('uploads/profile_pics', exist_ok=True)
+os.makedirs('static/manifest', exist_ok=True)
+
+# Database Models
+class User(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(255), nullable=False)
+    role = db.Column(db.String(20), default='user')  # user, admin
+    
+    # Profile information
+    first_name = db.Column(db.String(50))
+    last_name = db.Column(db.String(50))
+    phone = db.Column(db.String(20))
+    profile_pic = db.Column(db.String(255))
+    bio = db.Column(db.Text)
+    
+    # Status
+    is_verified = db.Column(db.Boolean, default=False)
+    is_active = db.Column(db.Boolean, default=True)
+    is_banned = db.Column(db.Boolean, default=False)
+    
+    # Wallet
+    wallet_balance = db.Column(db.Numeric(10, 2), default=0.00)
+    
+    # Referral system
+    referral_code = db.Column(db.String(20), unique=True)
+    referred_by = db.Column(db.Integer, db.ForeignKey('user.id'))
+    referral_earnings = db.Column(db.Numeric(10, 2), default=0.00)
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    last_login = db.Column(db.DateTime)
+    
+    # Relationships
+    accounts_for_sale = db.relationship('SocialAccount', foreign_keys='SocialAccount.seller_id', backref='seller', lazy=True)
+    purchases = db.relationship('Purchase', foreign_keys='Purchase.buyer_id', backref='buyer', lazy=True)
+    deposits = db.relationship('WalletDeposit', foreign_keys='WalletDeposit.user_id', backref='user', lazy=True)
+    referrals = db.relationship('User', backref=db.backref('referrer', remote_side=[id]))
+
+    def __init__(self, **kwargs):
+        super(User, self).__init__(**kwargs)
+        if not self.referral_code:
+            self.referral_code = str(uuid.uuid4())[:8].upper()
+
+class SocialAccount(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    seller_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    
+    # Account details
+    platform = db.Column(db.String(50), nullable=False)
+    username = db.Column(db.String(100), nullable=False)
+    followers_count = db.Column(db.Integer)
+    engagement_rate = db.Column(db.Float)
+    account_age = db.Column(db.String(50))
+    niche = db.Column(db.String(100))
+    
+    # Pricing
+    price = db.Column(db.Numeric(10, 2), nullable=False)
+    
+    # Description and media
+    description = db.Column(db.Text)
+    screenshots = db.Column(db.Text)  # JSON array of image paths
+    
+    # Account credentials (encrypted)
+    login_email = db.Column(db.String(255))
+    login_password = db.Column(db.String(255))
+    additional_info = db.Column(db.Text)
+    
+    # Status
+    status = db.Column(db.String(20), default='pending')  # pending, approved, rejected, sold
+    is_featured = db.Column(db.Boolean, default=False)
+    
+    # Admin review
+    admin_notes = db.Column(db.Text)
+    reviewed_by = db.Column(db.Integer, db.ForeignKey('user.id'))
+    reviewed_at = db.Column(db.DateTime)
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class Purchase(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    buyer_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    account_id = db.Column(db.Integer, db.ForeignKey('social_account.id'), nullable=False)
+    
+    # Transaction details
+    amount = db.Column(db.Numeric(10, 2), nullable=False)
+    commission = db.Column(db.Numeric(10, 2), default=0.00)
+    total_amount = db.Column(db.Numeric(10, 2), nullable=False)
+    
+    # Status
+    status = db.Column(db.String(20), default='pending')  # pending, confirmed, completed, cancelled
+    payment_method = db.Column(db.String(50))
+    
+    # Payment proof
+    payment_proof = db.Column(db.String(255))
+    payment_reference = db.Column(db.String(100))
+    
+    # Account delivery
+    account_delivered = db.Column(db.Boolean, default=False)
+    delivery_date = db.Column(db.DateTime)
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    account = db.relationship('SocialAccount', backref='purchases')
+
+class WalletDeposit(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    
+    # Deposit details
+    amount = db.Column(db.Numeric(10, 2), nullable=False)
+    deposit_method = db.Column(db.String(50))  # bank_transfer, cash_deposit
+    bank_name = db.Column(db.String(100))
+    account_number = db.Column(db.String(20))
+    account_name = db.Column(db.String(100))
+    
+    # Payment proof
+    payment_proof = db.Column(db.String(255))
+    reference_number = db.Column(db.String(100))
+    
+    # Status
+    status = db.Column(db.String(20), default='pending')  # pending, confirmed, rejected
+    admin_notes = db.Column(db.Text)
+    processed_by = db.Column(db.Integer, db.ForeignKey('user.id'))
+    processed_at = db.Column(db.DateTime)
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class Settings(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # Site settings
+    site_name = db.Column(db.String(100), default='SocialMarket')
+    site_description = db.Column(db.Text)
+    site_logo = db.Column(db.String(255))
+    
+    # Currency settings
+    currency_symbol = db.Column(db.String(10), default='₦')
+    currency_code = db.Column(db.String(3), default='NGN')
+    
+    # Commission settings
+    commission_rate = db.Column(db.Numeric(5, 2), default=5.00)  # Percentage
+    referral_commission = db.Column(db.Numeric(5, 2), default=2.00)  # Percentage
+    
+    # Withdrawal limits
+    min_withdrawal = db.Column(db.Numeric(10, 2), default=1000.00)
+    max_withdrawal = db.Column(db.Numeric(10, 2), default=1000000.00)
+    
+    # Email settings
+    smtp_server = db.Column(db.String(100))
+    smtp_port = db.Column(db.Integer, default=587)
+    smtp_username = db.Column(db.String(100))
+    smtp_password = db.Column(db.String(255))
+    admin_email = db.Column(db.String(120))
+    
+    # Bank details for deposits
+    bank_name = db.Column(db.String(100))
+    account_number = db.Column(db.String(20))
+    account_name = db.Column(db.String(100))
+    
+    # Social media links
+    facebook_url = db.Column(db.String(255))
+    twitter_url = db.Column(db.String(255))
+    instagram_url = db.Column(db.String(255))
+    
+    # Timestamps
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or current_user.role != 'admin':
+            flash('Access denied. Admin privileges required.', 'error')
+            return redirect(url_for('index'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+# Forms
+class RegistrationForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired(), Length(min=4, max=20)])
+    email = EmailField('Email', validators=[DataRequired(), Email()])
+    password = PasswordField('Password', validators=[DataRequired(), Length(min=6)])
+    confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
+    referral_code = StringField('Referral Code (Optional)', validators=[Optional()])
+    submit = SubmitField('Register')
+    
+    def validate_username(self, username):
+        user = User.query.filter_by(username=username.data).first()
+        if user:
+            raise ValidationError('Username already taken. Please choose a different one.')
+    
+    def validate_email(self, email):
+        user = User.query.filter_by(email=email.data).first()
+        if user:
+            raise ValidationError('Email already registered. Please use a different email.')
+
+class LoginForm(FlaskForm):
+    email = EmailField('Email', validators=[DataRequired(), Email()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    remember_me = BooleanField('Remember Me')
+    submit = SubmitField('Login')
+
+# Routes
+@app.route('/')
+def index():
+    # Get featured accounts
+    featured_accounts = SocialAccount.query.filter_by(status='approved', is_featured=True).limit(6).all()
+    
+    # Get latest accounts
+    latest_accounts = SocialAccount.query.filter_by(status='approved').order_by(SocialAccount.created_at.desc()).limit(8).all()
+    
+    # Get statistics
+    stats = {
+        'total_accounts': SocialAccount.query.filter_by(status='approved').count(),
+        'total_users': User.query.filter_by(is_active=True).count(),
+        'total_sales': Purchase.query.filter_by(status='completed').count(),
+        'platforms': 11  # Static count for now
+    }
+    
+    return render_template('index.html', featured_accounts=featured_accounts, 
+                         latest_accounts=latest_accounts, stats=stats)
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+    
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        # Check if referral code is valid
+        referrer = None
+        if form.referral_code.data:
+            referrer = User.query.filter_by(referral_code=form.referral_code.data).first()
+            if not referrer:
+                flash('Invalid referral code.', 'warning')
+        
+        user = User(
+            username=form.username.data,
+            email=form.email.data,
+            password_hash=generate_password_hash(form.password.data),
+            referred_by=referrer.id if referrer else None
+        )
+        
+        try:
+            db.session.add(user)
+            db.session.commit()
+            flash('Registration successful! You can now log in.', 'success')
+            return redirect(url_for('login'))
+        except Exception as e:
+            db.session.rollback()
+            flash('Registration failed. Please try again.', 'error')
+    
+    return render_template('auth/register.html', form=form)
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+    
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        
+        if user and check_password_hash(user.password_hash, form.password.data):
+            if user.is_banned:
+                flash('Your account has been banned. Please contact support.', 'error')
+                return render_template('auth/login.html', form=form)
+            
+            login_user(user, remember=form.remember_me.data)
+            user.last_login = datetime.utcnow()
+            db.session.commit()
+            
+            # Redirect to next page if specified
+            next_page = request.args.get('next')
+            if next_page:
+                return redirect(next_page)
+            
+            # Redirect based on role
+            if user.role == 'admin':
+                return redirect(url_for('admin_dashboard'))
+            else:
+                return redirect(url_for('dashboard'))
+        else:
+            flash('Invalid email or password.', 'error')
+    
+    return render_template('auth/login.html', form=form)
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash('You have been logged out.', 'info')
+    return redirect(url_for('index'))
+
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    # Get user's accounts
+    user_accounts = SocialAccount.query.filter_by(seller_id=current_user.id).all()
+    
+    # Get user's purchases
+    user_purchases = Purchase.query.filter_by(buyer_id=current_user.id).all()
+    
+    # Get user's deposits
+    user_deposits = WalletDeposit.query.filter_by(user_id=current_user.id).order_by(WalletDeposit.created_at.desc()).limit(5).all()
+    
+    # Calculate statistics
+    total_sales = Purchase.query.filter_by(buyer_id=current_user.id, status='completed').count()
+    pending_sales = Purchase.query.filter_by(buyer_id=current_user.id, status='pending').count()
+    
+    stats = {
+        'total_accounts': len(user_accounts),
+        'approved_accounts': len([acc for acc in user_accounts if acc.status == 'approved']),
+        'pending_accounts': len([acc for acc in user_accounts if acc.status == 'pending']),
+        'total_sales': total_sales,
+        'pending_sales': pending_sales,
+        'wallet_balance': current_user.wallet_balance,
+        'referral_earnings': current_user.referral_earnings
+    }
+    
+    return render_template('dashboard/index.html', 
+                         accounts=user_accounts, 
+                         purchases=user_purchases,
+                         deposits=user_deposits,
+                         stats=stats)
+
+@app.route('/browse')
+def browse():
+    # Get filter parameters
+    platform = request.args.get('platform', '')
+    min_price = request.args.get('min_price', type=float)
+    max_price = request.args.get('max_price', type=float)
+    min_followers = request.args.get('min_followers', type=int)
+    niche = request.args.get('niche', '')
+    sort_by = request.args.get('sort_by', 'created_at')
+    order = request.args.get('order', 'desc')
+    
+    # Build query
+    query = SocialAccount.query.filter_by(status='approved')
+    
+    if platform:
+        query = query.filter(SocialAccount.platform == platform)
+    if min_price:
+        query = query.filter(SocialAccount.price >= min_price)
+    if max_price:
+        query = query.filter(SocialAccount.price <= max_price)
+    if min_followers:
+        query = query.filter(SocialAccount.followers_count >= min_followers)
+    if niche:
+        query = query.filter(SocialAccount.niche.contains(niche))
+    
+    # Apply sorting
+    if sort_by == 'price':
+        if order == 'asc':
+            query = query.order_by(SocialAccount.price.asc())
+        else:
+            query = query.order_by(SocialAccount.price.desc())
+    elif sort_by == 'followers':
+        if order == 'asc':
+            query = query.order_by(SocialAccount.followers_count.asc())
+        else:
+            query = query.order_by(SocialAccount.followers_count.desc())
+    else:  # created_at
+        if order == 'asc':
+            query = query.order_by(SocialAccount.created_at.asc())
+        else:
+            query = query.order_by(SocialAccount.created_at.desc())
+    
+    accounts = query.all()
+    
+    # Get unique platforms and niches for filters
+    platforms = db.session.query(SocialAccount.platform).filter_by(status='approved').distinct().all()
+    platforms = [p[0] for p in platforms]
+    
+    niches = db.session.query(SocialAccount.niche).filter_by(status='approved').distinct().all()
+    niches = [n[0] for n in niches if n[0]]
+    
+    return render_template('browse.html', 
+                         accounts=accounts, 
+                         platforms=platforms, 
+                         niches=niches,
+                         current_filters={
+                             'platform': platform,
+                             'min_price': min_price,
+                             'max_price': max_price,
+                             'min_followers': min_followers,
+                             'niche': niche,
+                             'sort_by': sort_by,
+                             'order': order
+                         })
+
+@app.route('/account/<int:account_id>')
+def account_detail(account_id):
+    account = SocialAccount.query.get_or_404(account_id)
+    
+    if account.status != 'approved':
+        flash('Account not available.', 'error')
+        return redirect(url_for('browse'))
+    
+    # Get similar accounts
+    similar_accounts = SocialAccount.query.filter(
+        SocialAccount.platform == account.platform,
+        SocialAccount.status == 'approved',
+        SocialAccount.id != account.id
+    ).limit(4).all()
+    
+    return render_template('account_detail.html', account=account, similar_accounts=similar_accounts)
+
+@app.route('/admin')
+@login_required
+@admin_required
+def admin_dashboard():
+    # Get statistics
+    stats = {
+        'total_users': User.query.count(),
+        'active_users': User.query.filter_by(is_active=True).count(),
+        'total_accounts': SocialAccount.query.count(),
+        'pending_accounts': SocialAccount.query.filter_by(status='pending').count(),
+        'approved_accounts': SocialAccount.query.filter_by(status='approved').count(),
+        'total_purchases': Purchase.query.count(),
+        'pending_purchases': Purchase.query.filter_by(status='pending').count(),
+        'completed_purchases': Purchase.query.filter_by(status='completed').count(),
+        'pending_deposits': WalletDeposit.query.filter_by(status='pending').count(),
+        'total_deposits': WalletDeposit.query.count()
+    }
+    
+    # Get recent activities
+    recent_accounts = SocialAccount.query.order_by(SocialAccount.created_at.desc()).limit(5).all()
+    recent_purchases = Purchase.query.order_by(Purchase.created_at.desc()).limit(5).all()
+    recent_deposits = WalletDeposit.query.order_by(WalletDeposit.created_at.desc()).limit(5).all()
+    
+    return render_template('admin/dashboard.html', 
+                         stats=stats,
+                         recent_accounts=recent_accounts,
+                         recent_purchases=recent_purchases,
+                         recent_deposits=recent_deposits)
+
+# PWA Routes
+@app.route('/manifest.json')
+def manifest():
+    return send_from_directory('static', 'manifest.json')
+
+@app.route('/sw.js')
+def service_worker():
+    return send_from_directory('static', 'sw.js')
+
+if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
+        
+        # Create admin user if not exists
+        admin = User.query.filter_by(email='admin@socialmedia.com').first()
+        if not admin:
+            admin_user = User(
+                username='admin',
+                email='admin@socialmedia.com',
+                password_hash=generate_password_hash('admin123'),
+                role='admin',
+                is_verified=True,
+                is_active=True
+            )
+            db.session.add(admin_user)
+            
+            # Create default settings
+            default_settings = Settings(
+                site_name='SocialMarket',
+                currency_symbol='₦',
+                currency_code='NGN',
+                commission_rate=Decimal('5.0'),
+                referral_commission=Decimal('2.0'),
+                min_withdrawal=Decimal('1000'),
+                max_withdrawal=Decimal('1000000'),
+                admin_email='admin@socialmedia.com'
+            )
+            db.session.add(default_settings)
+            db.session.commit()
+            
+    app.run(host='0.0.0.0', port=5000, debug=True)

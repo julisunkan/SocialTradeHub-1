@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section bg-gradient-primary text-white py-5">
+    <div class="container">
+        <div class="row align-items-center min-vh-50">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">
+                    Buy & Sell <span class="text-warning">Social Media Accounts</span> Safely
+                </h1>
+                <p class="lead mb-4">
+                    Nigeria's most trusted marketplace for social media accounts. Buy verified accounts or sell yours with secure escrow protection and instant payments in Naira.
+                </p>
+                <div class="d-flex gap-3 mb-4">
+                    <a href="{{ url_for('browse') }}" class="btn btn-warning btn-lg">
+                        <i class="fas fa-search me-2"></i>Browse Accounts
+                    </a>
+                    <a href="{{ url_for('register') }}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-user-plus me-2"></i>Start Selling
+                    </a>
+                </div>
+                <div class="d-flex align-items-center text-light">
+                    <div class="me-4">
+                        <i class="fas fa-shield-alt fa-2x text-warning mb-2"></i>
+                        <small class="d-block">Secure Escrow</small>
+                    </div>
+                    <div class="me-4">
+                        <i class="fas fa-money-bill-wave fa-2x text-warning mb-2"></i>
+                        <small class="d-block">Instant Payments</small>
+                    </div>
+                    <div>
+                        <i class="fas fa-headset fa-2x text-warning mb-2"></i>
+                        <small class="d-block">24/7 Support</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <div class="social-platforms">
+                    <div class="row g-3">
+                        <div class="col-4">
+                            <div class="platform-icon bg-white rounded-circle p-3 shadow">
+                                <i class="fab fa-instagram fa-2x text-danger"></i>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="platform-icon bg-white rounded-circle p-3 shadow">
+                                <i class="fab fa-facebook fa-2x text-primary"></i>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="platform-icon bg-white rounded-circle p-3 shadow">
+                                <i class="fab fa-twitter fa-2x text-info"></i>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="platform-icon bg-white rounded-circle p-3 shadow">
+                                <i class="fab fa-tiktok fa-2x text-dark"></i>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="platform-icon bg-white rounded-circle p-3 shadow">
+                                <i class="fab fa-youtube fa-2x text-danger"></i>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="platform-icon bg-white rounded-circle p-3 shadow">
+                                <i class="fab fa-linkedin fa-2x text-primary"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Statistics Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-card">
+                    <h3 class="text-primary fw-bold">{{ stats.total_accounts }}</h3>
+                    <p class="text-muted">Accounts Available</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-card">
+                    <h3 class="text-success fw-bold">{{ stats.total_users }}</h3>
+                    <p class="text-muted">Active Users</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-card">
+                    <h3 class="text-info fw-bold">{{ stats.total_sales }}</h3>
+                    <p class="text-muted">Successful Sales</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-card">
+                    <h3 class="text-warning fw-bold">{{ stats.platforms }}</h3>
+                    <p class="text-muted">Platforms Supported</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Accounts -->
+{% if featured_accounts %}
+<section class="py-5">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-12 text-center">
+                <h2 class="fw-bold mb-3">⭐ Featured Accounts</h2>
+                <p class="text-muted">Hand-picked premium accounts with verified metrics</p>
+            </div>
+        </div>
+        <div class="row">
+            {% for account in featured_accounts %}
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card h-100 shadow-sm account-card">
+                    <div class="card-header bg-warning text-dark">
+                        <div class="d-flex align-items-center">
+                            <i class="fab fa-{{ account.platform }} fa-lg me-2"></i>
+                            <strong>{{ account.platform.title() }}</strong>
+                            <span class="badge bg-success ms-auto">Featured</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">@{{ account.username }}</h5>
+                        <p class="text-muted mb-2">{{ account.niche }}</p>
+                        <div class="account-stats mb-3">
+                            <small class="text-muted">
+                                <i class="fas fa-users me-1"></i>{{ "{:,}".format(account.followers_count) }} followers
+                            </small>
+                            {% if account.engagement_rate %}
+                            <br><small class="text-muted">
+                                <i class="fas fa-chart-line me-1"></i>{{ account.engagement_rate }}% engagement
+                            </small>
+                            {% endif %}
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h4 class="text-success mb-0">₦{{ "{:,.2f}".format(account.price) }}</h4>
+                            <a href="{{ url_for('view_account', id=account.id) }}" class="btn btn-primary btn-sm">
+                                View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center">
+            <a href="{{ url_for('browse') }}" class="btn btn-outline-primary">
+                View All Accounts <i class="fas fa-arrow-right ms-1"></i>
+            </a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Latest Accounts -->
+{% if latest_accounts %}
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-12 text-center">
+                <h2 class="fw-bold mb-3">🚀 Latest Listings</h2>
+                <p class="text-muted">Fresh accounts just added to our marketplace</p>
+            </div>
+        </div>
+        <div class="row">
+            {% for account in latest_accounts %}
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card h-100 shadow-sm account-card">
+                    <div class="card-header">
+                        <div class="d-flex align-items-center">
+                            <i class="fab fa-{{ account.platform }} fa-lg me-2 text-primary"></i>
+                            <strong>{{ account.platform.title() }}</strong>
+                            <span class="badge bg-info ms-auto">New</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h6 class="card-title">@{{ account.username }}</h6>
+                        <p class="text-muted small mb-2">{{ account.niche }}</p>
+                        <small class="text-muted">
+                            <i class="fas fa-users me-1"></i>{{ "{:,}".format(account.followers_count) }}
+                        </small>
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <strong class="text-success">₦{{ "{:,.0f}".format(account.price) }}</strong>
+                            <a href="{{ url_for('view_account', id=account.id) }}" class="btn btn-sm btn-outline-primary">
+                                View
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- How It Works -->
+<section class="py-5">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-12 text-center">
+                <h2 class="fw-bold mb-3">How It Works</h2>
+                <p class="text-muted">Simple, secure, and transparent process</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-4 mb-4 text-center">
+                <div class="how-it-works-step">
+                    <div class="step-icon bg-primary text-white rounded-circle mx-auto mb-3">
+                        <i class="fas fa-user-plus fa-2x"></i>
+                    </div>
+                    <h5>1. Create Account</h5>
+                    <p class="text-muted">Sign up for free and verify your identity to start buying or selling accounts.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-4 text-center">
+                <div class="how-it-works-step">
+                    <div class="step-icon bg-success text-white rounded-circle mx-auto mb-3">
+                        <i class="fas fa-search fa-2x"></i>
+                    </div>
+                    <h5>2. Browse & Purchase</h5>
+                    <p class="text-muted">Find the perfect account for your needs and make secure payments with escrow protection.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-4 text-center">
+                <div class="how-it-works-step">
+                    <div class="step-icon bg-warning text-white rounded-circle mx-auto mb-3">
+                        <i class="fas fa-handshake fa-2x"></i>
+                    </div>
+                    <h5>3. Secure Transfer</h5>
+                    <p class="text-muted">Get account credentials instantly after payment verification. 100% secure process.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="py-5 bg-primary text-white">
+    <div class="container text-center">
+        <h2 class="fw-bold mb-3">Ready to Get Started?</h2>
+        <p class="lead mb-4">Join thousands of users buying and selling social media accounts</p>
+        <div class="d-flex justify-content-center gap-3">
+            <a href="{{ url_for('register') }}" class="btn btn-warning btn-lg">
+                <i class="fas fa-rocket me-2"></i>Start Selling
+            </a>
+            <a href="{{ url_for('browse') }}" class="btn btn-outline-light btn-lg">
+                <i class="fas fa-shopping-cart me-2"></i>Start Buying
+            </a>
+        </div>
+    </div>
+</section>
+
+<style>
+.hero-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 70vh;
+}
+
+.platform-icon {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    transition: transform 0.3s ease;
+}
+
+.platform-icon:hover {
+    transform: scale(1.1);
+}
+
+.account-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.account-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+}
+
+.step-icon {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+</style>
+{% endblock %}
