@@ -209,6 +209,23 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+// Auto-hide alerts after 5 seconds (excluding bank details)
+document.addEventListener('DOMContentLoaded', function() {
+    const alerts = document.querySelectorAll('.alert:not(.alert-permanent):not(.alert-info):not(.alert-success):not(.alert-warning)');
+    alerts.forEach(alert => {
+        // Only hide flash messages, not bank account details
+        if (!alert.closest('.card-body') || alert.classList.contains('alert-dismissible')) {
+            setTimeout(() => {
+                alert.style.transition = 'opacity 0.5s ease';
+                alert.style.opacity = '0';
+                setTimeout(() => {
+                    alert.style.display = 'none';
+                }, 500);
+            }, 5000);
+        }
+    });
+});
+
 // Platform icon mapping
 const platformIcons = {
     'instagram': 'fab fa-instagram',
