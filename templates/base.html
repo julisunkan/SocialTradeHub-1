@@ -168,13 +168,13 @@
                 <div class="col-lg-2 mb-4">
                     <h6 class="text-info mb-3">Support</h6>
                     <ul class="list-unstyled footer-links">
-                        <li><a href="#" class="footer-link">
+                        <li><a href="{{ settings.help_center_url or '#' }}" class="footer-link">
                             <i class="fas fa-life-ring me-1"></i>Help Center
                         </a></li>
-                        <li><a href="#" class="footer-link">
+                        <li><a href="{{ settings.contact_us_url or '#' }}" class="footer-link">
                             <i class="fas fa-envelope me-1"></i>Contact Us
                         </a></li>
-                        <li><a href="#" class="footer-link">
+                        <li><a href="{{ settings.safety_tips_url or '#' }}" class="footer-link">
                             <i class="fas fa-shield-alt me-1"></i>Safety Tips
                         </a></li>
                     </ul>
@@ -182,16 +182,16 @@
                 <div class="col-lg-2 mb-4">
                     <h6 class="text-success mb-3">Legal</h6>
                     <ul class="list-unstyled footer-links">
-                        <li><a href="#" class="footer-link">
+                        <li><a href="{{ settings.privacy_policy_url or '#' }}" class="footer-link">
                             <i class="fas fa-user-shield me-1"></i>Privacy Policy
                         </a></li>
-                        <li><a href="#" class="footer-link">
+                        <li><a href="{{ settings.terms_of_service_url or '#' }}" class="footer-link">
                             <i class="fas fa-file-alt me-1"></i>Terms & Conditions
                         </a></li>
-                        <li><a href="#" class="footer-link">
+                        <li><a href="{{ settings.refund_policy_url or '#' }}" class="footer-link">
                             <i class="fas fa-undo me-1"></i>Refund Policy
                         </a></li>
-                        <li><a href="#" class="footer-link">
+                        <li><a href="{{ settings.cookie_policy_url or '#' }}" class="footer-link">
                             <i class="fas fa-cookie-bite me-1"></i>Cookie Policy
                         </a></li>
                     </ul>

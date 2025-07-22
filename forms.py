@@ -44,7 +44,7 @@ class ProfileForm(FlaskForm):
     bio = TextAreaField('Bio', validators=[Optional(), Length(max=500)])
     profile_pic = FileField('Profile Picture', validators=[
         Optional(),
-        FileAllowed(['jpg', 'png', 'gif'], 'Images only!')
+        FileAllowed(['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'], 'Images only!')
     ])
     submit = SubmitField('Update Profile')
 
@@ -93,7 +93,7 @@ class SocialAccountForm(FlaskForm):
     ])
     screenshots = FileField('Account Screenshots', validators=[
         FileRequired(),
-        FileAllowed(['jpg', 'png', 'gif'], 'Images only!')
+        FileAllowed(['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'], 'Images only!')
     ])
     login_email = StringField('Login Email', validators=[
         DataRequired(), 
@@ -123,7 +123,7 @@ class WalletDepositForm(FlaskForm):
     ])
     payment_proof = FileField('Payment Proof', validators=[
         FileRequired(),
-        FileAllowed(['jpg', 'png', 'pdf'], 'Images and PDF only!')
+        FileAllowed(['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'pdf'], 'Images and PDF only!')
     ])
     submit = SubmitField('Submit Deposit Request')
 
@@ -134,7 +134,7 @@ class PurchaseForm(FlaskForm):
     ], validators=[DataRequired()])
     payment_proof = FileField('Payment Proof (if bank transfer)', validators=[
         Optional(),
-        FileAllowed(['jpg', 'png', 'pdf'], 'Images and PDF only!')
+        FileAllowed(['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'pdf'], 'Images and PDF only!')
     ])
     payment_reference = StringField('Payment Reference (if bank transfer)', validators=[
         Optional(), 

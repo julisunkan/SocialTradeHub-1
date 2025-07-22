@@ -74,7 +74,7 @@
                                             </span>
                                         </td>
                                         <td>
-                                            <button class="btn btn-sm btn-outline-primary">Review</button>
+                                            <a href="{{ url_for('admin_review_purchase', id=purchase.id) }}" class="btn btn-sm btn-outline-primary">Review</a>
                                         </td>
                                     </tr>
                                     {% endfor %}

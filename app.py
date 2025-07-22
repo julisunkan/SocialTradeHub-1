@@ -100,7 +100,7 @@ def allowed_file(filename, allowed_extensions):
            filename.rsplit('.', 1)[1].lower() in allowed_extensions
 
 def save_uploaded_file(file, upload_path, max_size=(800, 600)):
-    if file and allowed_file(file.filename, {'png', 'jpg', 'jpeg', 'gif', 'pdf'}):
+    if file and allowed_file(file.filename, {'png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'pdf'}):
         filename = secure_filename(file.filename)
         filename = f"{uuid.uuid4().hex}_{filename}"
         filepath = os.path.join(upload_path, filename)
@@ -108,7 +108,7 @@ def save_uploaded_file(file, upload_path, max_size=(800, 600)):
         # Create directory if it doesn't exist
         os.makedirs(upload_path, exist_ok=True)
 
-        if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif')):
+        if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp')):
             # Resize and compress image to be under 15KB
             image = Image.open(file)
             image.thumbnail(max_size, Image.Resampling.LANCZOS)
@@ -433,8 +433,9 @@ def deposit():
     else:
         # Show form validation errors
         for field, errors in form.errors.items():
+            field_name = getattr(form, field).label.text if hasattr(form, field) and hasattr(getattr(form, field), 'label') else field
             for error in errors:
-                flash(f'{field}: {error}', 'error')
+                flash(f'{field_name}: {error}', 'error')
 
     return render_template('deposit.html', form=form, settings=settings)
 
@@ -912,9 +913,23 @@ def view_page(slug):
 # File serving
 @app.route('/uploads/<path:filename>')
 @login_required
-@admin_required
 def uploaded_file(filename):
-    return send_from_directory('uploads', filename)
+    # Allow users to view their own uploaded files and admins to view all
+    if current_user.role == 'admin':
+        return send_from_directory('uploads', filename)
+    
+    # For regular users, only allow viewing payment proofs from their own deposits/purchases
+    file_path = os.path.join('uploads', filename)
+    if os.path.exists(file_path):
+        # Check if the file belongs to the current user
+        user_deposit = WalletDeposit.query.filter_by(user_id=current_user.id, payment_proof=filename.split('/')[-1]).first()
+        user_purchase = Purchase.query.filter_by(buyer_id=current_user.id, payment_proof=filename.split('/')[-1]).first()
+        
+        if user_deposit or user_purchase:
+            return send_from_directory('uploads', filename)
+    
+    flash('Access denied.', 'error')
+    return redirect(url_for('dashboard'))
 
 # Error handlers
 @app.errorhandler(404)
