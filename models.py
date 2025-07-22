@@ -142,11 +142,11 @@ class WalletDeposit(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 class Invoice(db.Model):
-    __tablename__ = 'invoices'
+    __tablename__ = 'invoice'
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    purchase_id = db.Column(db.Integer, db.ForeignKey('purchases.id'), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    purchase_id = db.Column(db.Integer, db.ForeignKey('purchase.id'), nullable=True)
     invoice_number = db.Column(db.String(50), unique=True, nullable=False)
     amount = db.Column(db.Numeric(10, 2), nullable=False)
     total_amount = db.Column(db.Numeric(10, 2), nullable=False)
@@ -157,7 +157,7 @@ class Invoice(db.Model):
     purchase = db.relationship('Purchase', backref='invoice', uselist=False)
 
 class Page(db.Model):
-    __tablename__ = 'pages'
+    __tablename__ = 'page'
 
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
@@ -169,7 +169,7 @@ class Page(db.Model):
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_by = db.Column(db.Integer, db.ForeignKey('users.id'))
+    updated_by = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     # Relationships
     updater = db.relationship('User', backref='updated_pages')
