@@ -89,7 +89,7 @@ class SocialAccountForm(FlaskForm):
     ], places=2)
     description = TextAreaField('Description', validators=[
         DataRequired(), 
-        Length(min=10, max=1000)
+        Length(min=50, max=1000, message='Description must be at least 50 characters long')
     ])
     screenshots = FileField('Account Screenshots', validators=[
         FileRequired(),

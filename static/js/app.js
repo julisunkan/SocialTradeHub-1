@@ -40,9 +40,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Form validation
-    // Forms validation and handling
-    const forms = document.querySelectorAll('.needs-validation');
-    forms.forEach(form => {
+    const validationForms = document.querySelectorAll('.needs-validation');
+    validationForms.forEach(form => {
         form.addEventListener('submit', function(e) {
             const submitBtn = form.querySelector('input[type="submit"], button[type="submit"]');
             if (submitBtn) {
@@ -55,6 +54,46 @@ document.addEventListener('DOMContentLoaded', function() {
                     submitBtn.innerHTML = submitBtn.getAttribute('data-original-text') || 'Submit';
                 }, 5000);
             }
+
+            // Description length validation for account listing
+            const descriptionField = form.querySelector('#description'); // Assuming 'description' is the ID of the description field. Adjust if different.
+            if (descriptionField) {
+                const minLength = 100; // Minimum characters required.
+                if (descriptionField.value.length < minLength) {
+                    e.preventDefault(); // Prevent form submission
+                    e.stopPropagation();
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'invalid-feedback';
+                    errorDiv.style.color = 'red';
+                    errorDiv.textContent = `Description must be at least ${minLength} characters long.`;
+
+                    // Remove any previous error message
+                    const existingErrorDiv = descriptionField.parentNode.querySelector('.invalid-feedback');
+                    if (existingErrorDiv) {
+                        existingErrorDiv.remove();
+                    }
+
+                    descriptionField.parentNode.appendChild(errorDiv);
+                    descriptionField.classList.add('is-invalid');
+
+                    // Re-enable submit button
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = submitBtn.getAttribute('data-original-text') || 'Submit';
+                } else {
+                     descriptionField.classList.remove('is-invalid');
+                     const existingErrorDiv = descriptionField.parentNode.querySelector('.invalid-feedback');
+                     if (existingErrorDiv) {
+                         existingErrorDiv.remove();
+                     }
+                }
+            }
+
+            if (!form.checkValidity()) {
+              e.preventDefault()
+              e.stopPropagation()
+            }
+
+            form.classList.add('was-validated')
         });
     });
 
@@ -208,6 +247,15 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('App installed successfully');
         showToast('App installed successfully!', 'success');
     });
+
+    // Hide login/register buttons if user is logged in
+    const loginButton = document.getElementById('login-btn');
+    const registerButton = document.getElementById('register-btn');
+
+    if (loginButton && registerButton && localStorage.getItem('user')) { // Assuming 'user' is stored in localStorage upon login
+        loginButton.style.display = 'none';
+        registerButton.style.display = 'none';
+    }
 });
 
 // Auto-hide alerts after 5 seconds (excluding bank details)
