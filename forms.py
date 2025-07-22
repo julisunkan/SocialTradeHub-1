@@ -20,12 +20,12 @@ class RegistrationForm(FlaskForm):
     ])
     referral_code = StringField('Referral Code (Optional)', validators=[Optional()])
     submit = SubmitField('Register')
-    
+
     def validate_username(self, username):
         user = User.query.filter_by(username=username.data).first()
         if user:
             raise ValidationError('Username already taken. Please choose a different one.')
-    
+
     def validate_email(self, email):
         user = User.query.filter_by(email=email.data).first()
         if user:
@@ -62,7 +62,7 @@ class SocialAccountForm(FlaskForm):
         ('telegram', 'Telegram'),
         ('whatsapp_business', 'WhatsApp Business')
     ], validators=[DataRequired()])
-    
+
     username = StringField('Account Username', validators=[
         DataRequired(), 
         Length(min=1, max=100)
@@ -237,6 +237,24 @@ class SettingsForm(FlaskForm):
         DataRequired(), 
         Email()
     ])
+    # Social media
+    facebook_url = StringField('Facebook URL')
+    twitter_url = StringField('Twitter URL')
+    instagram_url = StringField('Instagram URL')
+    telegram_url = StringField('Telegram URL')
+    whatsapp_url = StringField('WhatsApp URL')
+
+    # Footer links
+    help_center_url = StringField('Help Center URL')
+    contact_us_url = StringField('Contact Us URL')
+    safety_tips_url = StringField('Safety Tips URL')
+    terms_of_service_url = StringField('Terms of Service URL')
+    privacy_policy_url = StringField('Privacy Policy URL')
+    refund_policy_url = StringField('Refund Policy URL')
+    cookie_policy_url = StringField('Cookie Policy URL')
+    how_it_works_url = StringField('How It Works URL')
+    pricing_url = StringField('Pricing URL')
+
     submit = SubmitField('Update Settings')
 
 class SMTPTestForm(FlaskForm):

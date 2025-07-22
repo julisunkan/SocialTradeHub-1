@@ -5,6 +5,11 @@ from werkzeug.utils import secure_filename
 from app import app, db, mail, limiter
 from models import *
 from forms import *
+
+@app.context_processor
+def inject_settings():
+    settings = Settings.query.first()
+    return dict(settings=settings)
 from datetime import datetime, timedelta
 from decimal import Decimal
 import os

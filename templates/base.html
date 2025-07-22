@@ -132,57 +132,125 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-dark text-light py-5 mt-5">
+    <footer class="footer-colorful text-light py-5 mt-5">
         <div class="container">
             <div class="row">
                 <div class="col-lg-4 mb-4">
-                    <h5><i class="fas fa-share-alt me-2"></i>SocialMarket</h5>
-                    <p class="text-muted">Your trusted marketplace for buying and selling social media accounts with secure transactions in Nigerian Naira.</p>
+                    <h5 class="text-white mb-3">
+                        <i class="fas fa-share-alt me-2 text-warning"></i>
+                        {% if settings and settings.site_name %}{{ settings.site_name }}{% else %}SocialMarket{% endif %}
+                    </h5>
+                    <p class="footer-text">Your trusted marketplace for buying and selling social media accounts with secure transactions in Nigerian Naira.</p>
+                    <div class="footer-stats mt-3">
+                        <small class="text-success"><i class="fas fa-check-circle me-1"></i>Trusted Platform</small>
+                        <small class="text-info ms-3"><i class="fas fa-shield-alt me-1"></i>Secure Transactions</small>
+                    </div>
                 </div>
                 <div class="col-lg-2 mb-4">
-                    <h6>Quick Links</h6>
-                    <ul class="list-unstyled">
-                        <li><a href="{{ url_for('browse') }}" class="text-muted">Browse Accounts</a></li>
-                        <li><a href="{{ url_for('list_account') }}" class="text-muted">Sell Account</a></li>
-                        <li><a href="#" class="text-muted">How It Works</a></li>
-                        <li><a href="#" class="text-muted">Pricing</a></li>
+                    <h6 class="text-warning mb-3">Quick Links</h6>
+                    <ul class="list-unstyled footer-links">
+                        <li><a href="{{ url_for('browse') }}" class="footer-link">
+                            <i class="fas fa-search me-1"></i>Browse Accounts
+                        </a></li>
+                        {% if current_user.is_authenticated %}
+                        <li><a href="{{ url_for('list_account') }}" class="footer-link">
+                            <i class="fas fa-plus me-1"></i>Sell Account
+                        </a></li>
+                        {% endif %}
+                        <li><a href="{% if settings and settings.how_it_works_url %}{{ settings.how_it_works_url }}{% else %}#{% endif %}" class="footer-link">
+                            <i class="fas fa-question-circle me-1"></i>How It Works
+                        </a></li>
+                        <li><a href="{% if settings and settings.pricing_url %}{{ settings.pricing_url }}{% else %}#{% endif %}" class="footer-link">
+                            <i class="fas fa-tag me-1"></i>Pricing
+                        </a></li>
                     </ul>
                 </div>
                 <div class="col-lg-2 mb-4">
-                    <h6>Support</h6>
-                    <ul class="list-unstyled">
-                        <li><a href="#" class="text-muted">Help Center</a></li>
-                        <li><a href="#" class="text-muted">Contact Us</a></li>
-                        <li><a href="#" class="text-muted">Safety Tips</a></li>
-                        <li><a href="#" class="text-muted">Terms of Service</a></li>
+                    <h6 class="text-info mb-3">Support</h6>
+                    <ul class="list-unstyled footer-links">
+                        <li><a href="{% if settings and settings.help_center_url %}{{ settings.help_center_url }}{% else %}#{% endif %}" class="footer-link">
+                            <i class="fas fa-life-ring me-1"></i>Help Center
+                        </a></li>
+                        <li><a href="{% if settings and settings.contact_us_url %}{{ settings.contact_us_url }}{% else %}#{% endif %}" class="footer-link">
+                            <i class="fas fa-envelope me-1"></i>Contact Us
+                        </a></li>
+                        <li><a href="{% if settings and settings.safety_tips_url %}{{ settings.safety_tips_url }}{% else %}#{% endif %}" class="footer-link">
+                            <i class="fas fa-shield-alt me-1"></i>Safety Tips
+                        </a></li>
+                        <li><a href="{% if settings and settings.terms_of_service_url %}{{ settings.terms_of_service_url }}{% else %}#{% endif %}" class="footer-link">
+                            <i class="fas fa-file-contract me-1"></i>Terms of Service
+                        </a></li>
                     </ul>
                 </div>
                 <div class="col-lg-2 mb-4">
-                    <h6>Legal</h6>
-                    <ul class="list-unstyled">
-                        <li><a href="#" class="text-muted">Privacy Policy</a></li>
-                        <li><a href="#" class="text-muted">Terms & Conditions</a></li>
-                        <li><a href="#" class="text-muted">Refund Policy</a></li>
-                        <li><a href="#" class="text-muted">Cookie Policy</a></li>
+                    <h6 class="text-success mb-3">Legal</h6>
+                    <ul class="list-unstyled footer-links">
+                        <li><a href="{% if settings and settings.privacy_policy_url %}{{ settings.privacy_policy_url }}{% else %}#{% endif %}" class="footer-link">
+                            <i class="fas fa-user-shield me-1"></i>Privacy Policy
+                        </a></li>
+                        <li><a href="{% if settings and settings.terms_of_service_url %}{{ settings.terms_of_service_url }}{% else %}#{% endif %}" class="footer-link">
+                            <i class="fas fa-file-alt me-1"></i>Terms & Conditions
+                        </a></li>
+                        <li><a href="{% if settings and settings.refund_policy_url %}{{ settings.refund_policy_url }}{% else %}#{% endif %}" class="footer-link">
+                            <i class="fas fa-undo me-1"></i>Refund Policy
+                        </a></li>
+                        <li><a href="{% if settings and settings.cookie_policy_url %}{{ settings.cookie_policy_url }}{% else %}#{% endif %}" class="footer-link">
+                            <i class="fas fa-cookie-bite me-1"></i>Cookie Policy
+                        </a></li>
                     </ul>
                 </div>
                 <div class="col-lg-2 mb-4">
-                    <h6>Follow Us</h6>
+                    <h6 class="text-pink mb-3">Follow Us</h6>
                     <div class="social-links">
-                        <a href="#" class="text-muted me-3"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" class="text-muted me-3"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="text-muted me-3"><i class="fab fa-instagram"></i></a>
-                        <a href="#" class="text-muted me-3"><i class="fab fa-telegram"></i></a>
+                        {% if settings and settings.facebook_url %}
+                        <a href="{{ settings.facebook_url }}" class="social-link facebook" target="_blank">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        {% endif %}
+                        {% if settings and settings.twitter_url %}
+                        <a href="{{ settings.twitter_url }}" class="social-link twitter" target="_blank">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        {% endif %}
+                        {% if settings and settings.instagram_url %}
+                        <a href="{{ settings.instagram_url }}" class="social-link instagram" target="_blank">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        {% endif %}
+                        {% if settings and settings.telegram_url %}
+                        <a href="{{ settings.telegram_url }}" class="social-link telegram" target="_blank">
+                            <i class="fab fa-telegram"></i>
+                        </a>
+                        {% endif %}
+                        {% if settings and settings.whatsapp_url %}
+                        <a href="{{ settings.whatsapp_url }}" class="social-link whatsapp" target="_blank">
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                    <div class="mt-3">
+                        <small class="text-light">
+                            <i class="fas fa-users me-1 text-success"></i>Join our community
+                        </small>
                     </div>
                 </div>
             </div>
-            <hr class="text-muted">
-            <div class="row">
+            <hr class="footer-divider">
+            <div class="row align-items-center">
                 <div class="col-md-6">
-                    <p class="text-muted mb-0">&copy; 2024 SocialMarket. All rights reserved.</p>
+                    <p class="footer-copyright mb-0">
+                        &copy; 2024 {% if settings and settings.site_name %}{{ settings.site_name }}{% else %}SocialMarket{% endif %}. All rights reserved.
+                    </p>
                 </div>
                 <div class="col-md-6 text-md-end">
-                    <p class="text-muted mb-0">Made with <i class="fas fa-heart text-danger"></i> in Nigeria</p>
+                    <p class="footer-made mb-0">
+                        Made with <i class="fas fa-heart text-danger"></i> in Nigeria
+                        <span class="ms-2">
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                        </span>
+                    </p>
                 </div>
             </div>
         </div>

@@ -218,6 +218,19 @@ class Settings(db.Model):
     facebook_url = db.Column(db.String(255))
     twitter_url = db.Column(db.String(255))
     instagram_url = db.Column(db.String(255))
+    telegram_url = db.Column(db.String(255))
+    whatsapp_url = db.Column(db.String(255))
+    
+    # Footer links
+    help_center_url = db.Column(db.String(255))
+    contact_us_url = db.Column(db.String(255))
+    safety_tips_url = db.Column(db.String(255))
+    terms_of_service_url = db.Column(db.String(255))
+    privacy_policy_url = db.Column(db.String(255))
+    refund_policy_url = db.Column(db.String(255))
+    cookie_policy_url = db.Column(db.String(255))
+    how_it_works_url = db.Column(db.String(255))
+    pricing_url = db.Column(db.String(255))
     
     # Timestamps
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
